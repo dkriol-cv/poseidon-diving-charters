@@ -128,12 +128,14 @@ const AvailabilityManagement = () => {
     }
 
     if (toInsert.length > 0) {
-      const { error } = await supabase.from('availability').insert(toInsert);
+      const { data: inserted, error } = await supabase.from('availability').insert(toInsert).select('id, date, start_time, end_time, note, status');
       if (error) {
         toast({ title: 'Failed to block dates', description: error.message, variant: 'destructive' });
         setIsProcessing(false);
         return;
       }
+      // Optimistic: add new slots to state immediately so calendar turns red
+      if (inserted) setBlockedSlots(prev => [...prev, ...inserted]);
     }
 
     if (conflicts.length > 0) {
