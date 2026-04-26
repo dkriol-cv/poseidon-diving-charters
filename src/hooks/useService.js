@@ -20,7 +20,7 @@ export const useService = (slug) => {
 
       const { data, error: fetchError } = await supabase
         .from('services')
-        .select('id, slug, title, price, description, duration, is_active')
+        .select('id, slug, title, base_price, description, is_active')
         .eq('slug', slug)
         .eq('is_active', true)
         .single();

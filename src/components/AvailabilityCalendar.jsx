@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Loader2, Wifi } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useBookingModal } from '@/contexts/BookingModalContext';
@@ -32,7 +32,8 @@ function MonthGrid({ year, month, slotsByDate }) {
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date    = new Date(year, month, day);
-    const dateStr = date.toISOString().split('T')[0];
+    // Use local date string to avoid UTC offset issues
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isPast  = date < today;
     const state   = getDayState(dateStr);
 
@@ -72,18 +73,21 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
   const [baseMonth, setBaseMonth] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [slotsByDate, setSlotsByDate] = useState({});
   const [loading, setLoading]         = useState(true);
-  const [isFetching, setIsFetching]   = useState(false);
+  const fetchingRef = useRef(false);
 
   const second = baseMonth.month === 11
     ? { year: baseMonth.year + 1, month: 0 }
     : { year: baseMonth.year,     month: baseMonth.month + 1 };
 
   const fetchAvailability = useCallback(async () => {
-    if (isFetching) return;
-    setIsFetching(true);
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     try {
-      const startDate = new Date(baseMonth.year, baseMonth.month, 1).toISOString().split('T')[0];
-      const endDate   = new Date(second.year, second.month + 1, 0).toISOString().split('T')[0];
+      const startDate = `${baseMonth.year}-${String(baseMonth.month + 1).padStart(2, '0')}-01`;
+      const endDate   = (() => {
+        const d = new Date(second.year, second.month + 1, 0);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      })();
 
       const { data, error } = await supabase
         .from('availability')
@@ -102,19 +106,22 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
       }
     } finally {
       setLoading(false);
-      setIsFetching(false);
+      fetchingRef.current = false;
     }
-  }, [baseMonth.year, baseMonth.month, isFetching]);
+  }, [baseMonth.year, baseMonth.month]);
 
-  useEffect(() => { fetchAvailability(); }, [baseMonth.year, baseMonth.month]);
+  useEffect(() => {
+    setLoading(true);
+    fetchAvailability();
+  }, [fetchAvailability]);
 
   useEffect(() => {
     const ch = supabase
-      .channel('public-avail-calendar')
+      .channel(`avail-calendar-${baseMonth.year}-${baseMonth.month}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'availability' }, () => fetchAvailability())
       .subscribe();
-    return () => supabase.removeChannel(ch);
-  }, [fetchAvailability]);
+    return () => { supabase.removeChannel(ch); };
+  }, [baseMonth.year, baseMonth.month]);
 
   const handlePrev = () => {
     const now = new Date();

@@ -31,7 +31,6 @@ const ServicesManagement = () => {
     title: '',
     base_price: '',
     description: '',
-    duration: '',
     is_active: true
   });
 
@@ -44,7 +43,7 @@ const ServicesManagement = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('services')
-        .select('id, slug, title, base_price, description, duration, is_active, created_at, updated_at')
+        .select('id, slug, title, base_price, description, is_active, created_at, updated_at')
         .order('slug', { ascending: true });
 
       if (error) throw error;
@@ -68,7 +67,6 @@ const ServicesManagement = () => {
       title: service.title || '',
       base_price: service.base_price?.toString() || '',
       description: service.description || '',
-      duration: service.duration || '',
       is_active: service.is_active ?? true
     });
     setIsDialogOpen(true);
@@ -105,7 +103,6 @@ const ServicesManagement = () => {
           title: formData.title.trim(),
           base_price: parseFloat(formData.base_price),
           description: formData.description.trim(),
-          duration: formData.duration.trim(),
           is_active: formData.is_active,
           updated_at: new Date().toISOString()
         })
@@ -140,7 +137,6 @@ const ServicesManagement = () => {
       title: '',
       base_price: '',
       description: '',
-      duration: '',
       is_active: true
     });
   };
@@ -197,9 +193,6 @@ const ServicesManagement = () => {
                       Price
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Duration
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -213,7 +206,7 @@ const ServicesManagement = () => {
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                   {services.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
                         No services found
                       </td>
                     </tr>
@@ -232,9 +225,6 @@ const ServicesManagement = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#03c4c9]">
                           €{service.base_price?.toFixed(2) || '0.00'}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {service.duration || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {service.is_active ? (
@@ -298,31 +288,18 @@ const ServicesManagement = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="base_price">Price (€) *</Label>
-                <Input
-                  id="base_price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.base_price}
-                  onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
-                  placeholder="0.00"
-                  className="text-gray-900"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration</Label>
-                <Input
-                  id="duration"
-                  value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                  placeholder="e.g., 3-4 hours"
-                  className="text-gray-900"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="base_price">Price (€) *</Label>
+              <Input
+                id="base_price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.base_price}
+                onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
+                placeholder="0.00"
+                className="text-gray-900"
+              />
             </div>
 
             <div className="space-y-2">
