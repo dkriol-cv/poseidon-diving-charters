@@ -80,6 +80,14 @@ const ExclusiveCharterPage = () => {
             >
               PRIVATE<br />BOAT CHARTER
             </motion.h1>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-10 text-left"
+            >
+              <AvailabilityCalendar serviceName={service?.title || 'Private Boat Charter'} experienceImage={experienceImage} />
+            </motion.div>
           </div>
         </section>
 
@@ -99,7 +107,7 @@ const ExclusiveCharterPage = () => {
                     <p className="text-lg text-[#8c959f] dark:text-gray-400 mb-4 leading-relaxed font-lato">
                       {service?.description || "When you charter with us the boat, the crew, and the adventure are entirely yours. The boat belongs solely to your group, creating a personal environment perfect for celebrating with friends, family reunions, or romantic escapes."}
                     </p>
-                    {service?.price && (
+                    {service?.base_price && (
                       <div className="mb-6 p-4 bg-[#03c4c9]/10 border-l-4 border-[#03c4c9] rounded-lg">
                         <p className="text-sm text-[#8c959f] dark:text-gray-400">
                           <span className="font-bold text-[#03c4c9] text-lg">Starting from €{service.price}</span>
@@ -135,17 +143,6 @@ const ExclusiveCharterPage = () => {
                 />
               </motion.div>
             </div>
-
-            {/* Availability Calendar Section */}
-            <motion.div {...fadeInUp} className="mb-24">
-              <h2 className="text-3xl font-bold mb-6 text-center font-futura">Check Availability</h2>
-              <p className="text-lg text-[#8c959f] dark:text-gray-400 mb-8 text-center max-w-3xl mx-auto">
-                View real-time availability for our private boat charter. Green dates are open for booking.
-              </p>
-              <div className="max-w-5xl mx-auto">
-                <AvailabilityCalendar />
-              </div>
-            </motion.div>
 
             <motion.div {...fadeInUp} className="max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold mb-12 text-center font-futura">Choose Your Perfect Charter</h2>

@@ -48,6 +48,14 @@ const TailorMadePage = () => {
             >
               TAILOR-MADE<br />DIVING EXPERIENCE
             </motion.h1>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-10 text-left"
+            >
+              <AvailabilityCalendar serviceName={service?.title || 'Tailor-Made Diving Experience'} experienceImage={experienceImage} />
+            </motion.div>
           </div>
         </section>
 
@@ -94,7 +102,7 @@ const TailorMadePage = () => {
                     ) : (
                       <>
                         <span className="text-3xl font-bold text-[#03c4c9]">
-                          {service?.price ? `From €${service.price}` : 'Price on request'}
+                          {service?.base_price ? `From €${service.base_price}` : 'Price on request'}
                         </span>
                         {service?.duration && (
                           <span className="text-sm text-[#8c959f]">• {service.duration}</span>
@@ -141,16 +149,6 @@ const TailorMadePage = () => {
               </motion.div>
             </div>
 
-            {/* Availability Calendar Section */}
-            <motion.div {...fadeInUp} className="mb-16">
-              <h2 className="text-3xl font-bold mb-6 text-center">Check Availability</h2>
-              <p className="text-lg text-[#8c959f] dark:text-gray-400 mb-8 text-center max-w-3xl mx-auto">
-                View real-time availability for our tailor-made diving experience. Green dates are open for booking.
-              </p>
-              <div className="max-w-5xl mx-auto">
-                <AvailabilityCalendar />
-              </div>
-            </motion.div>
           </div>
         </section>
       </div>

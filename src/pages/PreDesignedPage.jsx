@@ -71,6 +71,14 @@ const PreDesignedPage = () => {
             >
               PRE-DESIGNED<br />DIVING CHARTER
             </motion.h1>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-10 text-left"
+            >
+              <AvailabilityCalendar serviceName={service?.title || 'Pre-Designed Diving Charter'} experienceImage={experienceImage} />
+            </motion.div>
           </div>
         </section>
 
@@ -91,7 +99,7 @@ const PreDesignedPage = () => {
                     <p className="text-lg text-[#8c959f] dark:text-gray-400 mb-4 leading-relaxed">
                       {service?.description || "Let us plan your diving charter for the day. This diving trip is easy to book, all-inclusive and clear in its offering. We give you the maximum adventure with minimum fuss."}
                     </p>
-                    {service?.price && (
+                    {service?.base_price && (
                       <div className="mb-6 p-4 bg-[#03c4c9]/10 border-l-4 border-[#03c4c9] rounded-lg">
                         <p className="text-sm text-[#8c959f] dark:text-gray-400">
                           <span className="font-bold text-[#03c4c9] text-lg">Starting from €{service.price}</span>
@@ -127,17 +135,6 @@ const PreDesignedPage = () => {
                 />
               </motion.div>
             </div>
-
-            {/* Availability Calendar Section */}
-            <motion.div {...fadeInUp} className="mb-24">
-              <h2 className="text-3xl font-bold mb-6 text-center">Check Availability</h2>
-              <p className="text-lg text-[#8c959f] dark:text-gray-400 mb-8 text-center max-w-3xl mx-auto">
-                View real-time availability for our pre-designed diving charter. Green dates are open for booking.
-              </p>
-              <div className="max-w-5xl mx-auto">
-                <AvailabilityCalendar />
-              </div>
-            </motion.div>
 
             {/* Pricing Section */}
             <motion.div {...fadeInUp} className="max-w-5xl mx-auto">

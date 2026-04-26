@@ -61,6 +61,14 @@ const BeachCharterPage = () => {
               <span className="text-[#03c4c9] font-bold">×</span>
               <span>Pirata Bar</span>
             </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-10 text-left"
+            >
+              <AvailabilityCalendar serviceName={service?.title || 'Beach Charter'} experienceImage={experienceImage} />
+            </motion.div>
           </div>
         </section>
 
@@ -77,21 +85,6 @@ const BeachCharterPage = () => {
                 {service?.description || "Experience a hidden gem of the Algarve coast with our new private charter, a unique collaboration between Poseidon Diving Charters and the legendary Pirata Beach Bar. Departing directly from the sands of Meia Praia, this experience is designed for groups of up to four looking for a relaxed, private getaway on the water."}
               </motion.p>
             )}
-          </div>
-        </section>
-
-        {/* Availability Calendar Section */}
-        <section className="py-20 px-4 bg-[#f5f7f9] dark:bg-[#111a1f]">
-          <div className="container mx-auto max-w-7xl">
-            <motion.div {...fadeInUp}>
-              <h2 className="text-3xl font-bold mb-6 text-center font-futura">Check Availability</h2>
-              <p className="text-lg text-[#8c959f] dark:text-gray-400 mb-8 text-center max-w-3xl mx-auto">
-                View real-time availability for our Beach Charter experience. Green dates are open for booking.
-              </p>
-              <div className="max-w-5xl mx-auto">
-                <AvailabilityCalendar />
-              </div>
-            </motion.div>
           </div>
         </section>
 
@@ -183,7 +176,7 @@ const BeachCharterPage = () => {
               ) : (
                 <>
                   <p className="text-5xl font-bold text-[#03c4c9] mb-2">
-                    {service?.price ? `From €${service.price}` : 'Price on request'}
+                    {service?.base_price ? `From €${service.base_price}` : 'Price on request'}
                   </p>
                   <p className="text-[#8c959f] dark:text-gray-400 text-lg">
                     {service?.duration ? `${service.duration} for groups up to four people` : 'per hour for groups up to four people'}
