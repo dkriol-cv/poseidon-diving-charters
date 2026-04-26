@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, CalendarCheck, LogOut, Globe, BookOpen, DollarSign } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck, LogOut, Globe, BookOpen, DollarSign, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -15,10 +15,11 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/admin/availability', icon: CalendarCheck, label: 'Availability' },
-    { path: '/admin/services', icon: DollarSign, label: 'Services' },
-    { path: '/admin/blog', icon: BookOpen, label: 'Blog' },
+    { path: '/admin/dashboard',    icon: LayoutDashboard, label: 'Dashboard'    },
+    { path: '/admin/availability', icon: CalendarCheck,  label: 'Availability' },
+    { path: '/admin/services',     icon: DollarSign,     label: 'Services'     },
+    { path: '/admin/blog',         icon: BookOpen,       label: 'Blog'         },
+    { path: '/admin/contacts',     icon: MessageSquare,  label: 'Contacts'     },
   ];
 
   return (

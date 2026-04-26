@@ -29,7 +29,7 @@ const ServicesManagement = () => {
 
   const [formData, setFormData] = useState({
     title: '',
-    price: '',
+    base_price: '',
     description: '',
     duration: '',
     is_active: true
@@ -44,7 +44,7 @@ const ServicesManagement = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('services')
-        .select('id, slug, title, price, description, duration, is_active, created_at, updated_at')
+        .select('id, slug, title, base_price, description, duration, is_active, created_at, updated_at')
         .order('slug', { ascending: true });
 
       if (error) throw error;
@@ -66,7 +66,7 @@ const ServicesManagement = () => {
     setEditingService(service);
     setFormData({
       title: service.title || '',
-      price: service.price?.toString() || '',
+      base_price: service.base_price?.toString() || '',
       description: service.description || '',
       duration: service.duration || '',
       is_active: service.is_active ?? true
@@ -87,7 +87,7 @@ const ServicesManagement = () => {
       return;
     }
 
-    if (!formData.price || isNaN(parseFloat(formData.price)) || parseFloat(formData.price) < 0) {
+    if (!formData.base_price || isNaN(parseFloat(formData.base_price)) || parseFloat(formData.base_price) < 0) {
       toast({
         title: "Validation Error",
         description: "Please enter a valid price.",
@@ -103,7 +103,7 @@ const ServicesManagement = () => {
         .from('services')
         .update({
           title: formData.title.trim(),
-          price: parseFloat(formData.price),
+          base_price: parseFloat(formData.base_price),
           description: formData.description.trim(),
           duration: formData.duration.trim(),
           is_active: formData.is_active,
@@ -138,7 +138,7 @@ const ServicesManagement = () => {
     setEditingService(null);
     setFormData({
       title: '',
-      price: '',
+      base_price: '',
       description: '',
       duration: '',
       is_active: true
@@ -231,7 +231,7 @@ const ServicesManagement = () => {
                           {service.title || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#03c4c9]">
-                          €{service.price?.toFixed(2) || '0.00'}
+                          €{service.base_price?.toFixed(2) || '0.00'}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {service.duration || 'N/A'}
@@ -300,14 +300,14 @@ const ServicesManagement = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="price">Price (€) *</Label>
+                <Label htmlFor="base_price">Price (€) *</Label>
                 <Input
-                  id="price"
+                  id="base_price"
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  value={formData.base_price}
+                  onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
                   placeholder="0.00"
                   className="text-gray-900"
                 />

@@ -1,550 +1,423 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, X, Loader2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, X, Loader2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/customSupabaseClient';
 import { motion } from 'framer-motion';
 
+const BLOCK_TYPES = [
+  { id: 'full_day',  label: 'Full Day',       start: '08:00', end: '18:00' },
+  { id: 'morning',   label: 'Morning',         start: '08:00', end: '13:00' },
+  { id: 'afternoon', label: 'Afternoon',       start: '13:00', end: '18:00' },
+  { id: 'custom',    label: 'Custom Hours',    start: '',      end: ''      },
+];
+
+function timesOverlap(aStart, aEnd, bStart, bEnd) {
+  return aStart < bEnd && aEnd > bStart;
+}
+
+function isFullDay(start, end) {
+  return (start || '08:00') <= '08:00' && (end || '18:00') >= '18:00';
+}
+
+function getBlockLabel(start, end) {
+  const s = start || '08:00';
+  const e = end || '18:00';
+  if (s === '08:00' && e === '13:00') return 'Morning';
+  if (s === '13:00' && e === '18:00') return 'Afternoon';
+  if (isFullDay(s, e)) return 'Full Day';
+  return `${s}–${e}`;
+}
+
 const AvailabilityManagement = () => {
   const { toast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState([]);
-  const [blockedDates, setBlockedDates] = useState([]);
+  const [blockedSlots, setBlockedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [blockType, setBlockType] = useState('full_day');
+  const [customStart, setCustomStart] = useState('09:00');
+  const [customEnd, setCustomEnd] = useState('12:00');
+  const [note, setNote] = useState('');
 
-  const fetchBlockedDates = useCallback(async () => {
-    if (isFetching) return;
-    
-    setIsFetching(true);
+  const fetchBlockedSlots = useCallback(async () => {
     try {
-      // Optimized query: select only 'date' column
       const { data, error } = await supabase
         .from('availability')
-        .select('date')
+        .select('id, date, start_time, end_time, note, status')
         .eq('status', 'unavailable')
         .order('date', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching blocked dates:', error);
-        toast({
-          title: "Error Loading Data",
-          description: "Failed to load blocked dates. Please refresh the page.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const dates = (data || []).map(item => item.date);
-      setBlockedDates(dates);
-    } catch (error) {
-      console.error('Unexpected error fetching blocked dates:', error);
-      toast({
-        title: "Network Error",
-        description: "Please check your connection and try again.",
-        variant: "destructive"
-      });
+      if (error) throw error;
+      setBlockedSlots(data || []);
+    } catch (err) {
+      toast({ title: 'Error loading data', description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
-      setIsFetching(false);
     }
-  }, [toast, isFetching]);
+  }, [toast]);
+
+  useEffect(() => { fetchBlockedSlots(); }, []);
 
   useEffect(() => {
-    fetchBlockedDates();
-  }, []);
-
-  useEffect(() => {
-    // Set up real-time subscription for availability changes
     const channel = supabase
-      .channel('admin-availability-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'availability'
-        },
-        (payload) => {
-          console.log('Availability change detected:', payload);
-          fetchBlockedDates();
-        }
-      )
+      .channel('admin-avail-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'availability' }, fetchBlockedSlots)
       .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [fetchBlockedSlots]);
 
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [fetchBlockedDates]);
+  const getStartTime = () => blockType === 'custom' ? customStart : BLOCK_TYPES.find(t => t.id === blockType).start;
+  const getEndTime   = () => blockType === 'custom' ? customEnd   : BLOCK_TYPES.find(t => t.id === blockType).end;
+
+  const getSlotsForDate = (dateStr) => blockedSlots.filter(s => s.date === dateStr);
+
+  const getDayState = (dateStr) => {
+    const slots = getSlotsForDate(dateStr);
+    if (slots.length === 0) return 'available';
+    if (slots.some(s => isFullDay(s.start_time, s.end_time))) return 'full';
+    return 'partial';
+  };
 
   const handleDateClick = (dateStr) => {
     const isPast = new Date(dateStr) < new Date(new Date().setHours(0, 0, 0, 0));
-    if (isPast) return;
-
-    const isBlocked = blockedDates.includes(dateStr);
-    if (isBlocked) return;
-
-    setSelectedDates(prev => {
-      if (prev.includes(dateStr)) {
-        return prev.filter(d => d !== dateStr);
-      } else {
-        return [...prev, dateStr];
-      }
-    });
-  };
-
-  const removeSelectedDate = (dateStr) => {
-    setSelectedDates(prev => prev.filter(d => d !== dateStr));
-  };
-
-  const clearSelection = () => {
-    setSelectedDates([]);
+    if (isPast || getDayState(dateStr) === 'full' || isProcessing) return;
+    setSelectedDates(prev =>
+      prev.includes(dateStr) ? prev.filter(d => d !== dateStr) : [...prev, dateStr]
+    );
   };
 
   const blockSelectedDates = async () => {
     if (selectedDates.length === 0 || isProcessing) return;
+    const newStart = getStartTime();
+    const newEnd   = getEndTime();
+
+    if (!newStart || !newEnd || newStart >= newEnd) {
+      toast({ title: 'Invalid time range', description: 'Start time must be before end time.', variant: 'destructive' });
+      return;
+    }
 
     setIsProcessing(true);
-    
-    try {
-      // Filter out dates that are already blocked
-      const newDates = selectedDates.filter(date => !blockedDates.includes(date));
-      
-      if (newDates.length === 0) {
-        toast({
-          title: "All Dates Already Blocked",
-          description: "All selected dates are already blocked in the system.",
-          variant: "destructive"
-        });
-        clearSelection();
-        setIsProcessing(false);
-        return;
+    const conflicts = [];
+    const toInsert  = [];
+
+    for (const date of selectedDates) {
+      const existing = getSlotsForDate(date);
+
+      if (isFullDay(newStart, newEnd) && existing.length > 0) {
+        conflicts.push(`${date} (has existing blocks — remove them first)`);
+        continue;
       }
-
-      // Optimistic update: immediately add to blocked dates
-      setBlockedDates(prev => [...prev, ...newDates].sort());
-
-      // Prepare bulk insert data - ONLY date and status (no experience_id)
-      const insertData = newDates.map(date => ({
-        date,
-        status: 'unavailable'
-      }));
-
-      const { error } = await supabase
-        .from('availability')
-        .insert(insertData);
-
-      if (error) {
-        // Revert optimistic update on error
-        setBlockedDates(prev => prev.filter(d => !newDates.includes(d)));
-        
-        // Check if error is due to unique constraint violation
-        if (error.code === '23505') {
-          const conflictDates = newDates.filter(date => blockedDates.includes(date));
-          toast({
-            title: "Some Dates Already Blocked",
-            description: `The following dates are already blocked: ${conflictDates.join(', ')}`,
-            variant: "destructive"
-          });
-        } else {
-          console.error('Error blocking dates:', error);
-          toast({
-            title: "Failed to Block Dates",
-            description: "Please try again. If the problem persists, contact support.",
-            variant: "destructive"
-          });
-        }
-        
-        setIsProcessing(false);
-        return;
+      if (existing.some(s => isFullDay(s.start_time, s.end_time))) {
+        conflicts.push(`${date} (full day already blocked)`);
+        continue;
       }
-
-      const alreadyBlockedCount = selectedDates.length - newDates.length;
-      let message = `${newDates.length} date${newDates.length > 1 ? 's' : ''} blocked successfully`;
-      
-      if (alreadyBlockedCount > 0) {
-        message = `${alreadyBlockedCount} date${alreadyBlockedCount > 1 ? 's' : ''} already blocked, ${newDates.length} date${newDates.length > 1 ? 's' : ''} added`;
+      const overlap = existing.filter(s =>
+        timesOverlap(newStart, newEnd, s.start_time || '08:00', s.end_time || '18:00')
+      );
+      if (overlap.length > 0) {
+        conflicts.push(`${date} (overlaps ${overlap.map(s => `${s.start_time}–${s.end_time}`).join(', ')})`);
+        continue;
       }
-
-      toast({
-        title: "Success",
-        description: message,
-      });
-
-      clearSelection();
-      
-      // Refetch to ensure data consistency
-      await fetchBlockedDates();
-      
-    } catch (error) {
-      // Revert optimistic update on network error
-      const newDates = selectedDates.filter(date => !blockedDates.includes(date));
-      setBlockedDates(prev => prev.filter(d => !newDates.includes(d)));
-      
-      console.error('Unexpected error blocking dates:', error);
-      toast({
-        title: "Network Error",
-        description: "Please check your connection and try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
+      toInsert.push({ date, start_time: newStart, end_time: newEnd, status: 'unavailable', note: note.trim() || null });
     }
+
+    if (toInsert.length > 0) {
+      const { error } = await supabase.from('availability').insert(toInsert);
+      if (error) {
+        toast({ title: 'Failed to block dates', description: error.message, variant: 'destructive' });
+        setIsProcessing(false);
+        return;
+      }
+    }
+
+    if (conflicts.length > 0) {
+      toast({
+        title: `${toInsert.length} blocked, ${conflicts.length} conflict${conflicts.length > 1 ? 's' : ''}`,
+        description: conflicts.join(' | '),
+        variant: toInsert.length === 0 ? 'destructive' : 'default',
+      });
+    } else {
+      toast({ title: 'Success', description: `${toInsert.length} block${toInsert.length !== 1 ? 's' : ''} added.` });
+    }
+
+    setSelectedDates([]);
+    setNote('');
+    await fetchBlockedSlots();
+    setIsProcessing(false);
   };
 
-  const removeBlockedDate = async (dateStr) => {
+  const removeBlockedSlot = async (id) => {
     if (isProcessing) return;
-    
     setIsProcessing(true);
-    
-    try {
-      // Optimistic update: immediately remove from blocked dates
-      const previousBlockedDates = [...blockedDates];
-      setBlockedDates(prev => prev.filter(d => d !== dateStr));
-
-      const { error } = await supabase
-        .from('availability')
-        .delete()
-        .eq('date', dateStr);
-
-      if (error) {
-        // Revert optimistic update on error
-        setBlockedDates(previousBlockedDates);
-        
-        console.error('Error removing blocked date:', error);
-        toast({
-          title: "Failed to Remove Date",
-          description: "Please try again. If the problem persists, contact support.",
-          variant: "destructive"
-        });
-        
-        setIsProcessing(false);
-        return;
-      }
-
-      toast({
-        title: "Success",
-        description: "Date unblocked successfully.",
-      });
-
-      // Refetch to ensure data consistency
-      await fetchBlockedDates();
-      
-    } catch (error) {
-      // Revert optimistic update on network error
-      console.error('Unexpected error removing blocked date:', error);
-      toast({
-        title: "Network Error",
-        description: "Please check your connection and try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
+    const { error } = await supabase.from('availability').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to remove block', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Block removed successfully.' });
+      await fetchBlockedSlots();
     }
+    setIsProcessing(false);
   };
 
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
-  const handlePrevMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
-  };
+  const getDaysInMonth   = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  const getFirstDayOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const dayNames   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentMonth);
-    const firstDay = getFirstDayOfMonth(currentMonth);
+    const firstDay    = getFirstDayOfMonth(currentMonth);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     const days = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
-    // Empty cells for days before month starts
-    for (let i = 0; i < firstDay; i++) {
-      days.push(
-        <div key={`empty-${i}`} className="aspect-square" />
-      );
-    }
+    for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="aspect-square" />);
 
-    // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      const date    = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
       const dateStr = date.toISOString().split('T')[0];
-      const isPast = date < today;
-      const isSelected = selectedDates.includes(dateStr);
-      const isBlocked = blockedDates.includes(dateStr);
+      const isPast  = date < today;
+      const state   = getDayState(dateStr);
+      const isSel   = selectedDates.includes(dateStr);
+      const isDisabled = isPast || state === 'full' || isProcessing;
 
-      let bgColor = 'bg-green-50 hover:bg-green-100 border-green-200';
-      let textColor = 'text-green-700';
-      let borderColor = 'border-green-200';
-
-      if (isPast) {
-        bgColor = 'bg-gray-100';
-        textColor = 'text-gray-400';
-        borderColor = 'border-gray-200';
-      } else if (isBlocked) {
-        bgColor = 'bg-red-50';
-        textColor = 'text-red-700';
-        borderColor = 'border-red-200';
-      } else if (isSelected) {
-        bgColor = 'bg-blue-100 hover:bg-blue-200 border-blue-300';
-        textColor = 'text-blue-700';
-        borderColor = 'border-blue-300';
-      }
+      let cls = 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700 cursor-pointer';
+      if (isPast)            cls = 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60';
+      else if (state === 'full')    cls = 'bg-red-50 border-red-200 text-red-700 cursor-not-allowed opacity-80';
+      else if (state === 'partial') cls = 'bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700 cursor-pointer';
+      if (isSel && !isPast && state !== 'full') cls = 'bg-blue-100 hover:bg-blue-200 border-blue-300 text-blue-700 cursor-pointer';
 
       days.push(
         <motion.button
           key={dateStr}
-          whileTap={!isPast && !isBlocked ? { scale: 0.95 } : {}}
+          whileTap={!isDisabled ? { scale: 0.95 } : {}}
           onClick={() => handleDateClick(dateStr)}
-          disabled={isPast || isBlocked || isProcessing}
-          className={cn(
-            "aspect-square flex items-center justify-center border-2 rounded-lg transition-all font-semibold text-sm",
-            bgColor,
-            textColor,
-            borderColor,
-            (isPast || isBlocked) && "cursor-not-allowed opacity-60",
-            !isPast && !isBlocked && !isProcessing && "cursor-pointer",
-            isProcessing && "opacity-50 cursor-wait"
-          )}
+          disabled={isDisabled}
+          className={cn("aspect-square flex flex-col items-center justify-center border-2 rounded-lg transition-all font-semibold text-sm", cls, isProcessing && "opacity-50 cursor-wait")}
         >
-          {day}
+          <span>{day}</span>
+          {state === 'partial' && !isPast && <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-0.5" />}
+          {state === 'full'    && !isPast && <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-0.5" />}
         </motion.button>
       );
     }
-
     return days;
   };
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
-  const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const formatDate = (dateStr) =>
+    new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#2d353b] dark:text-white flex items-center gap-3">
-            <Calendar className="text-[#03c4c9]" size={32} />
-            Availability Management
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Block dates to mark them as unavailable for all experiences
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-[#2d353b] dark:text-white flex items-center gap-3">
+          <Calendar className="text-[#03c4c9]" size={32} />
+          Availability Management
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
+          Block time slots to mark them unavailable. Applies globally to all experiences (one boat).
+        </p>
       </div>
 
-      {loading && (
+      {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-[#03c4c9]" />
-            <p className="text-sm text-gray-500">Loading availability data...</p>
-          </div>
+          <Loader2 className="w-8 h-8 animate-spin text-[#03c4c9]" />
         </div>
-      )}
-
-      {!loading && (
+      ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Calendar Section */}
+          {/* Calendar */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handlePrevMonth}
-                  disabled={isProcessing}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(p => new Date(p.getFullYear(), p.getMonth() - 1, 1))} disabled={isProcessing}>
                   <ChevronLeft className="w-5 h-5" />
                 </Button>
-                
-                <CardTitle className="text-xl">
-                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-                </CardTitle>
-
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleNextMonth}
-                  disabled={isProcessing}
-                >
+                <CardTitle className="text-xl">{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(p => new Date(p.getFullYear(), p.getMonth() + 1, 1))} disabled={isProcessing}>
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
             </CardHeader>
-            
             <CardContent>
-              {/* Day Names */}
-              <div className="grid grid-cols-7 gap-2 mb-2">
-                {dayNames.map(day => (
-                  <div key={day} className="text-center text-xs font-bold text-gray-500 uppercase">
-                    {day}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {dayNames.map(d => <div key={d} className="text-center text-xs font-bold text-gray-500 uppercase">{d}</div>)}
+              </div>
+              <div className="grid grid-cols-7 gap-1.5">{renderCalendarDays()}</div>
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                {[
+                  { cls: 'bg-green-50 border-green-200',   label: 'Available' },
+                  { cls: 'bg-blue-100 border-blue-300',    label: 'Selected'  },
+                  { cls: 'bg-orange-50 border-orange-200', label: 'Partial'   },
+                  { cls: 'bg-red-50 border-red-200',       label: 'Full Day'  },
+                ].map(({ cls, label }) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded border-2 ${cls}`} />
+                    <span>{label}</span>
                   </div>
                 ))}
               </div>
-
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-2">
-                {renderCalendarDays()}
-              </div>
-
-              {/* Legend */}
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-green-50 border-2 border-green-200" />
-                    <span>Available</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300" />
-                    <span>Selected</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-red-50 border-2 border-red-200" />
-                    <span>Blocked</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-gray-100 border-2 border-gray-200" />
-                    <span>Past</span>
-                  </div>
-                </div>
-              </div>
-
               {isProcessing && (
-                <div className="mt-4 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-3 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                  <span className="text-sm text-blue-700">Processing your request...</span>
+                  <span className="text-sm text-blue-700">Processing...</span>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Selected & Blocked Dates Section */}
-          <div className="space-y-6">
+          {/* Right panel */}
+          <div className="space-y-4">
+            {/* Block Type */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock size={18} className="text-[#03c4c9]" /> Block Type
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {BLOCK_TYPES.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setBlockType(t.id)}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all text-left",
+                        blockType === t.id
+                          ? "border-[#03c4c9] bg-[#03c4c9]/10 text-[#03c4c9]"
+                          : "border-gray-200 text-gray-600 hover:border-gray-300"
+                      )}
+                    >
+                      <div>{t.label}</div>
+                      {t.start && <div className="text-xs opacity-60 mt-0.5">{t.start}–{t.end}</div>}
+                    </button>
+                  ))}
+                </div>
+
+                {blockType === 'custom' && (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div>
+                      <Label className="text-xs mb-1 block">Start time</Label>
+                      <Input type="time" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm" />
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1 block">End time</Label>
+                      <Input type="time" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm" />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <Label className="text-xs mb-1 block">Note (optional)</Label>
+                  <Input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Maintenance, private event" className="text-sm" />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Selected Dates */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>Selected Dates ({selectedDates.length})</span>
-                </CardTitle>
+                <CardTitle className="text-lg">Selected ({selectedDates.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {selectedDates.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No dates selected
-                  </p>
+                  <p className="text-sm text-gray-500 text-center py-3">Click dates on the calendar</p>
                 ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {selectedDates.sort().map(dateStr => (
-                      <div 
-                        key={dateStr}
-                        className="flex items-center justify-between p-2 bg-blue-50 rounded-lg border border-blue-200"
-                      >
-                        <span className="text-sm font-medium text-blue-700">
-                          {formatDate(dateStr)}
-                        </span>
-                        <button
-                          onClick={() => removeSelectedDate(dateStr)}
-                          disabled={isProcessing}
-                          className="text-blue-700 hover:text-blue-900 disabled:opacity-50"
-                        >
-                          <X size={16} />
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto mb-3">
+                    {[...selectedDates].sort().map(d => (
+                      <div key={d} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg border border-blue-200">
+                        <span className="text-xs font-medium text-blue-700">{formatDate(d)}</span>
+                        <button onClick={() => setSelectedDates(p => p.filter(x => x !== d))} className="text-blue-500 hover:text-blue-700 ml-2">
+                          <X size={14} />
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
-
-                <div className="mt-4 space-y-2">
+                <div className="space-y-2">
                   <Button
                     onClick={blockSelectedDates}
                     disabled={selectedDates.length === 0 || isProcessing}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-[#03c4c9] hover:bg-[#02aeb3] text-white"
                   >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      `Block Selected Dates (${selectedDates.length})`
-                    )}
+                    {isProcessing
+                      ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+                      : `Block ${selectedDates.length || ''} Date${selectedDates.length !== 1 ? 's' : ''}`
+                    }
                   </Button>
-                  <Button
-                    onClick={clearSelection}
-                    disabled={selectedDates.length === 0 || isProcessing}
-                    variant="outline"
-                    className="w-full"
-                  >
+                  <Button onClick={() => setSelectedDates([])} disabled={selectedDates.length === 0 || isProcessing} variant="outline" className="w-full">
                     Clear Selection
                   </Button>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Blocked Dates */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Blocked Dates ({blockedDates.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {blockedDates.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No blocked dates
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {blockedDates.map(dateStr => (
-                      <div 
-                        key={dateStr}
-                        className="flex items-center justify-between p-2 bg-red-50 rounded-lg border border-red-200"
-                      >
-                        <span className="text-sm font-medium text-red-700">
-                          {formatDate(dateStr)}
-                        </span>
-                        <Button
-                          onClick={() => removeBlockedDate(dateStr)}
-                          disabled={isProcessing}
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-700 hover:text-red-900 hover:bg-red-100 h-7 px-2"
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
+      )}
+
+      {/* Blocked Slots List */}
+      {!loading && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Blocked Slots ({blockedSlots.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {blockedSlots.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">No blocked slots yet</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-xs text-gray-500 uppercase border-b dark:border-gray-700">
+                      <th className="text-left pb-2 pr-4 font-semibold">Date</th>
+                      <th className="text-left pb-2 pr-4 font-semibold">Hours</th>
+                      <th className="text-left pb-2 pr-4 font-semibold">Type</th>
+                      <th className="text-left pb-2 pr-4 font-semibold">Note</th>
+                      <th className="text-right pb-2 font-semibold">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {blockedSlots.map(slot => {
+                      const s = slot.start_time || '08:00';
+                      const e = slot.end_time   || '18:00';
+                      const full = isFullDay(s, e);
+                      return (
+                        <tr key={slot.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                          <td className="py-2.5 pr-4 font-medium text-[#2d353b] dark:text-white whitespace-nowrap">{formatDate(slot.date)}</td>
+                          <td className="py-2.5 pr-4 text-gray-600 dark:text-gray-400 whitespace-nowrap">{s}–{e}</td>
+                          <td className="py-2.5 pr-4">
+                            <span className={cn(
+                              "px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
+                              full ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                            )}>
+                              {getBlockLabel(s, e)}
+                            </span>
+                          </td>
+                          <td className="py-2.5 pr-4 text-gray-500 dark:text-gray-400 italic text-xs">{slot.note || '—'}</td>
+                          <td className="py-2.5 text-right">
+                            <Button
+                              onClick={() => removeBlockedSlot(slot.id)}
+                              disabled={isProcessing}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50 h-7 px-2"
+                            >
+                              Remove
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
