@@ -9,11 +9,13 @@
 <IfModule mod_headers.c>
   Header set X-Powered-By "Hostinger Horizons"
 
-  # Cache everything on CDN by default
-  Header set Cache-Control "public, s-maxage=604800, max-age=0"
-  
-  # Cache in browser all assets
+  # Cache HTML on CDN for 5 minutes only (so deploys propagate quickly).
+  # Browsers always revalidate (max-age=0).
+  Header set Cache-Control "public, s-maxage=300, max-age=0"
+
+  # Hashed assets (Vite outputs content-hashed filenames) can be cached
+  # aggressively in browser AND on the CDN — a new build emits new filenames.
   <If "%{REQUEST_URI} =~ m#^/assets/.*$#">
-    Header set Cache-Control "public, max-age=604800"
+    Header set Cache-Control "public, max-age=604800, s-maxage=604800, immutable"
   </If>
 </IfModule>
