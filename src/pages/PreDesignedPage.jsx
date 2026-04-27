@@ -159,8 +159,15 @@ const PreDesignedPage = () => {
 
                     <div className="mb-6">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-[#03c4c9]">
-                          {services[option.slug]?.base_price ? `€${services[option.slug].base_price}` : 'Price on request'}
+                        <span className="text-3xl font-bold text-[#03c4c9] flex items-baseline gap-2">
+                          {services[option.slug]?.promo_price ? (
+                            <>
+                              <span>€{services[option.slug].promo_price}</span>
+                              <span className="text-gray-400 line-through text-sm">€{services[option.slug].base_price}</span>
+                            </>
+                          ) : (
+                            <span>{services[option.slug]?.base_price ? `€${services[option.slug].base_price}` : 'Price on request'}</span>
+                          )}
                         </span>
                       </div>
                       <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>

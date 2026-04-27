@@ -31,14 +31,45 @@ const ExperiencesPage = () => {
   }, []);
 
   const getPrice = (slug) => {
-    const service = services.find(s => s.slug === slug);
-    if (!service || !service.base_price) return "Price on request";
-    return `From €${service.base_price}`;
+    const s = services.find(srv => srv.slug === slug);
+    if (!s) return "Price on request";
+    
+    // Use promotional price if available
+    const finalPrice = s.promo_price || s.base_price;
+    if (!finalPrice) return "Price on request";
+
+    return (
+      <span className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+        {s.promo_price ? (
+          <>
+            <span className="text-[#03c4c9] font-bold">€{s.promo_price}</span>
+            <span className="text-gray-400 line-through text-[10px]">€{s.base_price}</span>
+          </>
+        ) : (
+          <span>From €{s.base_price}</span>
+        )}
+      </span>
+    );
   };
 
   const getRawPrice = (slug) => {
-    const service = services.find(s => s.slug === slug);
-    return service?.base_price ? `€${service.base_price}` : "Price on request";
+    const s = services.find(srv => srv.slug === slug);
+    if (!s) return "Price on request";
+    
+    const finalPrice = s.promo_price || s.base_price;
+    if (!finalPrice) return "Price on request";
+
+    return (
+      <span className="flex items-baseline gap-2">
+        {s.promo_price && <span className="text-gray-400 line-through text-sm mr-1">€{s.base_price}</span>}
+        <span>€{finalPrice}</span>
+      </span>
+    );
+  };
+
+  const getName = (slug, defaultName) => {
+    const s = services.find(srv => srv.slug === slug);
+    return s?.name || defaultName;
   };
 
   const fadeInUp = {
@@ -91,7 +122,7 @@ const ExperiencesPage = () => {
                 <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#03c4c9]">BESPOKE</div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-xl font-bold mb-3 text-[#2d353b] dark:text-white">Tailor-made diving charter</h3>
+                <h3 className="text-xl font-bold mb-3 text-[#2d353b] dark:text-white">{getName('tailor-made', 'Tailor-made diving charter')}</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm flex-grow">
                   The bespoke diving trip is a unique, high-end experience that matches your desires and skill level. Consultation and planning is part of the premium service.
                 </p>
@@ -113,7 +144,7 @@ const ExperiencesPage = () => {
                 <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#03c4c9]">ALL-INCLUSIVE</div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-xl font-bold mb-3 text-[#2d353b] dark:text-white">Pre-designed diving charter</h3>
+                <h3 className="text-xl font-bold mb-3 text-[#2d353b] dark:text-white">{getName('pre-designed', 'Pre-designed diving charter')}</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm flex-grow">Let us plan your charter for the day. This diving trip is easy to book, all-inclusive and clear in its offering. Maximum adventure with minimum fuss.</p>
                 <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Clock size={16} className="mr-2 text-[#03c4c9]" />5.5 or 7.5 Hours</div>
@@ -133,7 +164,7 @@ const ExperiencesPage = () => {
                 <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#03c4c9]">EXCLUSIVITY</div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-xl font-bold mb-3 text-[#2d353b] dark:text-white">Private Boat Charter</h3>
+                <h3 className="text-xl font-bold mb-3 text-[#2d353b] dark:text-white">{getName('exclusive-charter', 'Private Boat Charter')}</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm flex-grow">Our boat charter offers private exclusivity. Discover the water on your terms. When you charter with us the boat, the crew, and the adventure are entirely yours.</p>
                 <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Clock size={16} className="mr-2 text-[#03c4c9]" />2.5 to 5.5 Hours</div>
@@ -159,7 +190,7 @@ const ExperiencesPage = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
             <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="bg-white dark:bg-[#162026] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm hover:shadow-xl hover:border-[#03c4c9] transition-all duration-300 flex flex-col relative h-full">
               <Badge className="absolute top-4 right-4 bg-[#03c4c9] hover:bg-[#02aeb3] text-white border-none">Max 4 Guests</Badge>
-              <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">¾ Day Diving Charter</h3></div>
+              <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">{getName('pre-designed', '¾ Day Diving Charter')}</h3></div>
               <div className="mb-6">
                 <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">{getRawPrice('pre-designed')}</span></div>
                 <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>
@@ -175,7 +206,7 @@ const ExperiencesPage = () => {
 
             <motion.div {...fadeInUp} transition={{ delay: 0.2 }} className="bg-white dark:bg-[#162026] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm hover:shadow-xl hover:border-[#03c4c9] transition-all duration-300 flex flex-col relative h-full">
               <Badge className="absolute top-4 right-4 bg-[#03c4c9] hover:bg-[#02aeb3] text-white border-none">Max 4 Guests</Badge>
-              <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">Full Day Diving Charter</h3></div>
+              <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">{getName('diving-full-day', 'Full Day Diving Charter')}</h3></div>
               <div className="mb-6">
                 <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">{getRawPrice('diving-full-day')}</span></div>
                 <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>
@@ -200,14 +231,14 @@ const ExperiencesPage = () => {
           </motion.div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {[
-              { title: 'Sunset Boat Charter', time: '2.5 Hours (18:00 - 20:30)', price: getRawPrice('sunset-charter'), desc: 'Witness the magical Algarve sunset from the privacy of your own boat.' },
-              { title: 'Morning Boat Charter', time: '3.5 Hours (09:30 - 13:00)', price: getRawPrice('morning-charter'), desc: 'Start your day on the water. Ideal for families who want to enjoy the calm morning sea.' },
-              { title: 'Afternoon Boat Charter', time: '3.5 Hours (13:30 - 17:00)', price: getRawPrice('afternoon-charter'), desc: 'Enjoy the warmest part of the day. Perfect for swimming and sunbathing.' },
-              { title: '¾ Day Boat Charter', time: '5.5 Hours (09:30 - 15:00)', price: getRawPrice('boat-3-4-day-charter'), desc: 'Our most popular extended option. Perfect for a leisurely day at sea.' }
+              { slug: 'sunset-charter', title: 'Sunset Boat Charter', time: '2.5 Hours (18:00 - 20:30)', price: getRawPrice('sunset-charter'), desc: 'Witness the magical Algarve sunset from the privacy of your own boat.' },
+              { slug: 'morning-charter', title: 'Morning Boat Charter', time: '3.5 Hours (09:30 - 13:00)', price: getRawPrice('morning-charter'), desc: 'Start your day on the water. Ideal for families who want to enjoy the calm morning sea.' },
+              { slug: 'afternoon-charter', title: 'Afternoon Boat Charter', time: '3.5 Hours (13:30 - 17:00)', price: getRawPrice('afternoon-charter'), desc: 'Enjoy the warmest part of the day. Perfect for swimming and sunbathing.' },
+              { slug: 'boat-3-4-day-charter', title: '¾ Day Boat Charter', time: '5.5 Hours (09:30 - 15:00)', price: getRawPrice('boat-3-4-day-charter'), desc: 'Our most popular extended option. Perfect for a leisurely day at sea.' }
             ].map((option, idx) => (
               <motion.div key={idx} {...fadeInUp} transition={{ delay: idx * 0.05 }} className="bg-white dark:bg-[#162026] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm hover:shadow-xl hover:border-[#03c4c9] transition-all duration-300 flex flex-col relative h-full">
                 <Badge className="absolute top-4 right-4 bg-[#03c4c9] hover:bg-[#02aeb3] text-white border-none">Max 4 Guests</Badge>
-                <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">{option.title}</h3></div>
+                <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">{getName(option.slug, option.title)}</h3></div>
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">{option.price}</span></div>
                   <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>

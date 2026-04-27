@@ -20,7 +20,7 @@ export const useService = (slug) => {
 
       const { data, error: fetchError } = await supabase
         .from('services')
-        .select('id, slug, name, title, base_price, description, is_active')
+        .select('id, slug, name, title, base_price, promo_price, description, is_active')
         .eq('slug', slug)
         .eq('is_active', true)
         .single();
@@ -79,7 +79,7 @@ export const useServices = (slugs = []) => {
       setLoading(true);
       const { data, error: fetchError } = await supabase
         .from('services')
-        .select('id, slug, name, title, base_price, description, is_active')
+        .select('id, slug, name, title, base_price, promo_price, description, is_active')
         .in('slug', slugs);
 
       if (fetchError) throw fetchError;
