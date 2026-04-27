@@ -22,8 +22,16 @@ const MAX_DAYS    = 90;
 const DAY_START   = '09:30';
 const DAY_END     = '20:30';
 
+// Postgres `time` returns 'HH:MM:SS' — strip seconds for comparison
+function normTime(t) {
+  if (!t) return null;
+  return String(t).slice(0, 5);
+}
+
 function isFullDay(start, end) {
-  return (start || DAY_START) <= DAY_START && (end || DAY_END) >= DAY_END;
+  const s = normTime(start) || DAY_START;
+  const e = normTime(end)   || DAY_END;
+  return s <= DAY_START && e >= DAY_END;
 }
 
 function toLocalDateStr(date) {

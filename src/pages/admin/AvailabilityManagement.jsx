@@ -22,21 +22,33 @@ const BLOCK_TYPES = [
   { id: 'custom',    label: 'Custom Hours',    start: '',        end: ''      },
 ];
 
+// Postgres `time` columns come back as 'HH:MM:SS' — normalize to 'HH:MM'
+function normTime(t) {
+  if (!t) return null;
+  return String(t).slice(0, 5);
+}
+
 function timesOverlap(aStart, aEnd, bStart, bEnd) {
   return aStart < bEnd && aEnd > bStart;
 }
 
 function isFullDay(start, end) {
-  return (start || DAY_START) <= DAY_START && (end || DAY_END) >= DAY_END;
+  const s = normTime(start) || DAY_START;
+  const e = normTime(end)   || DAY_END;
+  return s <= DAY_START && e >= DAY_END;
 }
 
 function getBlockLabel(start, end) {
-  const s = start || DAY_START;
-  const e = end   || DAY_END;
+  const s = normTime(start) || DAY_START;
+  const e = normTime(end)   || DAY_END;
+  if (isFullDay(s, e)) return 'Full Day';
   if (s === DAY_START && e === MID)     return 'Morning';
   if (s === MID       && e === DAY_END) return 'Afternoon';
-  if (isFullDay(s, e)) return 'Full Day';
   return `${s}–${e}`;
+}
+
+function toLocalDateStr(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 const AvailabilityManagement = () => {
@@ -90,7 +102,9 @@ const AvailabilityManagement = () => {
   };
 
   const handleDateClick = (dateStr) => {
-    const isPast = new Date(dateStr) < new Date(new Date().setHours(0, 0, 0, 0));
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayStr = toLocalDateStr(today);
+    const isPast = dateStr < todayStr;
     if (isPast || getDayState(dateStr) === 'full' || isProcessing) return;
     setSelectedDates(prev =>
       prev.includes(dateStr) ? prev.filter(d => d !== dateStr) : [...prev, dateStr]
@@ -187,7 +201,7 @@ const AvailabilityManagement = () => {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date    = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = toLocalDateStr(date);
       const isPast  = date < today;
       const state   = getDayState(dateStr);
       const isSel   = selectedDates.includes(dateStr);
