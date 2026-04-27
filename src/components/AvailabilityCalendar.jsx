@@ -18,9 +18,12 @@ const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'
 const DAY_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const DAY_MIN     = ['S','M','T','W','T','F','S'];
 const MAX_DAYS    = 90;
+// Operating window — first activity 09:30, last activity ends 20:30
+const DAY_START   = '09:30';
+const DAY_END     = '20:30';
 
 function isFullDay(start, end) {
-  return (start || '08:00') <= '08:00' && (end || '18:00') >= '18:00';
+  return (start || DAY_START) <= DAY_START && (end || DAY_END) >= DAY_END;
 }
 
 function toLocalDateStr(date) {
@@ -184,25 +187,23 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
 
         <div className="flex gap-2 flex-1 min-w-0">
           {visible.map((date, i) => {
-            const state    = getDayState(date);
-            const disabled = state === 'full';
+            const state = getDayState(date);
 
             return (
-              <button
+              <div
                 key={toLocalDateStr(date)}
-                onClick={() => !disabled && openModal(serviceName, experienceImage)}
-                disabled={disabled}
+                aria-label={`${DAY_SHORT[date.getDay()]} ${date.getDate()} — ${state}`}
                 className={cn(
-                  'flex flex-col items-center justify-center flex-1 min-w-0 h-14 rounded-lg border transition-all duration-150',
+                  'flex flex-col items-center justify-center flex-1 min-w-0 h-14 rounded-lg border transition-colors duration-150 select-none',
                   i >= 4 && 'hidden sm:flex',
                   i >= 5 && 'sm:hidden md:flex',
                   i >= 6 && 'md:hidden lg:flex',
                   state === 'available' &&
-                    'border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white cursor-pointer bg-white dark:bg-transparent',
+                    'border-gray-200 dark:border-gray-700 bg-white dark:bg-transparent',
                   state === 'partial' &&
-                    'bg-amber-50 dark:bg-amber-900/10 border-amber-300 dark:border-amber-700 hover:border-amber-500 cursor-pointer',
+                    'bg-amber-50 dark:bg-amber-900/10 border-amber-300 dark:border-amber-700',
                   state === 'full' &&
-                    'border-gray-200 dark:border-gray-800 cursor-not-allowed bg-gray-100 dark:bg-gray-900/60 opacity-60',
+                    'border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900/60 opacity-60',
                 )}
               >
                 <span className={cn(
@@ -224,7 +225,7 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
                 {state === 'partial' && (
                   <span className="w-1 h-1 rounded-full bg-amber-500 mt-1" />
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
@@ -239,17 +240,23 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
         </button>
       </div>
 
-      {/* More dates link — opens full calendar */}
-      <div className="mt-3">
+      {/* Actions: More dates + Book Now */}
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
         <button
           onClick={() => {
             setViewMonth(new Date(today.getFullYear(), today.getMonth(), 1));
             setFullOpen(true);
           }}
-          className="text-sm font-medium text-[#03c4c9] hover:underline"
+          className="text-sm font-medium text-[#03c4c9] hover:underline self-start sm:self-auto"
         >
-          More dates
+          More dates →
         </button>
+        <Button
+          onClick={() => openModal(serviceName, experienceImage)}
+          className="sm:ml-auto bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white font-bold"
+        >
+          BOOK NOW
+        </Button>
       </div>
 
       {/* Full calendar modal */}
@@ -303,28 +310,26 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
               if (!date) return <div key={i} className="h-10" />;
               const out      = isPastOrOutOfRange(date);
               const state    = out ? 'out' : getDayState(date);
-              const disabled = out || state === 'full';
               const isToday  = toLocalDateStr(date) === toLocalDateStr(today);
 
               return (
-                <button
+                <div
                   key={i}
-                  onClick={() => !disabled && openModal(serviceName, experienceImage)}
-                  disabled={disabled}
+                  aria-label={out ? 'unavailable' : `${date.getDate()} — ${state}`}
                   className={cn(
-                    'h-10 rounded-lg text-sm font-medium transition-all duration-150 border',
-                    out && 'text-gray-300 dark:text-gray-700 border-transparent cursor-not-allowed',
+                    'h-10 rounded-lg text-sm font-medium border flex items-center justify-center select-none',
+                    out && 'text-gray-300 dark:text-gray-700 border-transparent',
                     !out && state === 'available' &&
-                      'bg-white dark:bg-transparent border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:border-[#03c4c9] hover:bg-[#03c4c9]/5 cursor-pointer',
+                      'bg-white dark:bg-transparent border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white',
                     !out && state === 'partial' &&
-                      'bg-amber-50 dark:bg-amber-900/10 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 hover:border-amber-500 cursor-pointer',
+                      'bg-amber-50 dark:bg-amber-900/10 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200',
                     !out && state === 'full' &&
-                      'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 text-gray-300 dark:text-gray-600 line-through cursor-not-allowed',
-                    isToday && !disabled && 'ring-2 ring-[#03c4c9] ring-offset-1 dark:ring-offset-[#0b1216]',
+                      'bg-gray-100 dark:bg-gray-900/60 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600 line-through opacity-60',
+                    isToday && !out && 'ring-2 ring-[#03c4c9] ring-offset-1 dark:ring-offset-[#0b1216]',
                   )}
                 >
                   {date.getDate()}
-                </button>
+                </div>
               );
             })}
           </div>

@@ -10,11 +10,16 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/customSupabaseClient';
 import { motion } from 'framer-motion';
 
+// Operating window: first activity starts 09:30, last activity ends 20:30
+const DAY_START = '09:30';
+const DAY_END   = '20:30';
+const MID       = '14:30';
+
 const BLOCK_TYPES = [
-  { id: 'full_day',  label: 'Full Day',       start: '08:00', end: '18:00' },
-  { id: 'morning',   label: 'Morning',         start: '08:00', end: '13:00' },
-  { id: 'afternoon', label: 'Afternoon',       start: '13:00', end: '18:00' },
-  { id: 'custom',    label: 'Custom Hours',    start: '',      end: ''      },
+  { id: 'full_day',  label: 'Full Day',       start: DAY_START, end: DAY_END },
+  { id: 'morning',   label: 'Morning',         start: DAY_START, end: MID     },
+  { id: 'afternoon', label: 'Afternoon',       start: MID,       end: DAY_END },
+  { id: 'custom',    label: 'Custom Hours',    start: '',        end: ''      },
 ];
 
 function timesOverlap(aStart, aEnd, bStart, bEnd) {
@@ -22,14 +27,14 @@ function timesOverlap(aStart, aEnd, bStart, bEnd) {
 }
 
 function isFullDay(start, end) {
-  return (start || '08:00') <= '08:00' && (end || '18:00') >= '18:00';
+  return (start || DAY_START) <= DAY_START && (end || DAY_END) >= DAY_END;
 }
 
 function getBlockLabel(start, end) {
-  const s = start || '08:00';
-  const e = end || '18:00';
-  if (s === '08:00' && e === '13:00') return 'Morning';
-  if (s === '13:00' && e === '18:00') return 'Afternoon';
+  const s = start || DAY_START;
+  const e = end   || DAY_END;
+  if (s === DAY_START && e === MID)     return 'Morning';
+  if (s === MID       && e === DAY_END) return 'Afternoon';
   if (isFullDay(s, e)) return 'Full Day';
   return `${s}–${e}`;
 }
@@ -42,8 +47,8 @@ const AvailabilityManagement = () => {
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [blockType, setBlockType] = useState('full_day');
-  const [customStart, setCustomStart] = useState('09:00');
-  const [customEnd, setCustomEnd] = useState('12:00');
+  const [customStart, setCustomStart] = useState(DAY_START);
+  const [customEnd, setCustomEnd] = useState(MID);
   const [note, setNote] = useState('');
 
   const fetchBlockedSlots = useCallback(async () => {
@@ -118,7 +123,7 @@ const AvailabilityManagement = () => {
         continue;
       }
       const overlap = existing.filter(s =>
-        timesOverlap(newStart, newEnd, s.start_time || '08:00', s.end_time || '18:00')
+        timesOverlap(newStart, newEnd, s.start_time || DAY_START, s.end_time || DAY_END)
       );
       if (overlap.length > 0) {
         conflicts.push(`${date} (overlaps ${overlap.map(s => `${s.start_time}–${s.end_time}`).join(', ')})`);
@@ -384,8 +389,8 @@ const AvailabilityManagement = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {blockedSlots.map(slot => {
-                      const s = slot.start_time || '08:00';
-                      const e = slot.end_time   || '18:00';
+                      const s = slot.start_time || DAY_START;
+                      const e = slot.end_time   || DAY_END;
                       const full = isFullDay(s, e);
                       return (
                         <tr key={slot.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
