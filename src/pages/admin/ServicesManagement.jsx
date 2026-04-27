@@ -178,15 +178,26 @@ const ServicesManagement = () => {
             Manage your experiences like products in a shop. Change names, prices, and promotions.
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={fetchServices} 
-          disabled={loading}
-          className="gap-2"
-        >
-          <RefreshCw className={loading ? "animate-spin" : ""} size={16} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={createDefaultServices} 
+            disabled={isSyncing}
+            className="gap-2 border-[#03c4c9] text-[#03c4c9] hover:bg-[#03c4c9]/10"
+          >
+            {isSyncing ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />}
+            Sync Store
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={fetchServices} 
+            disabled={loading}
+            className="gap-2"
+          >
+            <RefreshCw className={loading ? "animate-spin" : ""} size={16} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -214,7 +225,7 @@ const ServicesManagement = () => {
                 { title: "Beach Charters", slugs: ['beach-charter'] }
               ].map((group, gIdx) => {
                 const groupServices = services.filter(s => group.slugs.includes(s.slug));
-                if (groupServices.length === 0) return null;
+
 
                 return (
                   <div key={gIdx} className="space-y-4">
@@ -223,7 +234,12 @@ const ServicesManagement = () => {
                       {group.title}
                     </h2>
                     
-                    <div className="grid gap-3">
+                    {groupServices.length === 0 ? (
+                      <div className="p-8 text-center border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
+                        <p className="text-gray-400 text-sm italic">No services found in this category. Click "Sync Store" to initialize them.</p>
+                      </div>
+                    ) : (
+                      <div className="grid gap-3">
                       {/* Header Row - Hidden on mobile */}
                       <div className="hidden lg:grid lg:grid-cols-[2fr_1fr_1fr_100px_120px] gap-4 px-6 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">
                         <span>Experience Name</span>
