@@ -162,14 +162,9 @@ const HomePage = () => {
 
       {/* Experiences Cards Section */}
       <section id="experiences" className="pt-0 pb-28 px-4 bg-[#0b1216]">
-        {/* Availability Bar - Integrated into dark section to avoid white gaps */}
-        <div className="container mx-auto max-w-5xl relative z-40 -translate-y-1/2">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white dark:bg-[#162026] rounded-2xl shadow-2xl p-6 md:p-2 border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center gap-4"
-          >
+        {/* Availability Bar - Using robust margin-top to overlap Hero */}
+        <div className="container mx-auto max-w-5xl relative z-50 -mt-16 px-4">
+          <div className="bg-white dark:bg-[#162026] rounded-2xl shadow-2xl p-6 md:p-2 border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center gap-4">
             <div className="flex-1 flex items-center gap-4 w-full px-4">
               <div className="w-12 h-12 rounded-xl bg-[#03c4c9]/10 flex items-center justify-center flex-shrink-0">
                 <CalendarIcon className="text-[#03c4c9]" size={24} />
@@ -188,7 +183,7 @@ const HomePage = () => {
                 CHECK AVAILABILITY <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         <div className="container mx-auto max-w-7xl">
