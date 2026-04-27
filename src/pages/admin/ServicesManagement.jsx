@@ -17,7 +17,9 @@ const REQUIRED_SERVICES = [
   { slug: 'sunset-charter', name: 'Sunset Boat Charter', base_price: 500 },
   { slug: 'morning-charter', name: 'Morning Boat Charter', base_price: 600 },
   { slug: 'afternoon-charter', name: 'Afternoon Boat Charter', base_price: 600 },
-  { slug: 'boat-3-4-day-charter', name: '¾ Day Boat Charter', base_price: 700 }
+  { slug: 'boat-3-4-day-charter', name: '¾ Day Boat Charter', base_price: 700 },
+  { slug: 'diving-3-4-day', name: '¾ Day Diving Charter', base_price: 1250 },
+  { slug: 'diving-full-day', name: 'Full Day Diving Charter', base_price: 1500 }
 ];
 
 const ServicesManagement = () => {

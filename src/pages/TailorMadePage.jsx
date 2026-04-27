@@ -105,7 +105,7 @@ const TailorMadePage = () => {
                           {service?.promo_price ? (
                             <>
                               <span>€{service.promo_price}</span>
-                              <span className="text-gray-400 line-through text-sm">€{service.base_price}</span>
+                              <span className="text-gray-400 line-through text-sm">€{service?.base_price}</span>
                             </>
                           ) : (
                             <span>{service?.base_price ? `€${service.base_price}` : 'Price on request'}</span>

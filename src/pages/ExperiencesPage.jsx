@@ -7,28 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Euro, ChevronRight } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
-import supabase from '@/lib/customSupabaseClient';
+import { useServices } from '@/hooks/useService';
 
 const ExperiencesPage = () => {
   const { openModal } = useBookingModal();
-  const [services, setServices] = React.useState([]);
-  const [loadingPrices, setLoadingPrices] = React.useState(true);
+  const { services: servicesData, loading } = useServices([
+    'tailor-made', 'pre-designed', 'exclusive-charter', 'beach-charter',
+    'private-boat-charter', 'sunset-charter', 'morning-charter', 
+    'afternoon-charter', 'boat-3-4-day-charter', 'diving-3-4-day', 'diving-full-day'
+  ]);
 
-  React.useEffect(() => {
-    const fetchPrices = async () => {
-      try {
-        const { data } = await supabase
-          .from('services')
-          .select('slug, base_price');
-        setServices(data || []);
-      } catch (error) {
-        console.error('Error fetching prices:', error);
-      } finally {
-        setLoadingPrices(false);
-      }
-    };
-    fetchPrices();
-  }, []);
+  const services = Object.values(servicesData);
 
   const getPrice = (slug) => {
     const s = services.find(srv => srv.slug === slug);

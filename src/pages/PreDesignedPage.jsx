@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Clock, Loader2 } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
-import { useService } from '@/hooks/useService';
+import { useService, useServices } from '@/hooks/useService';
 
 const PreDesignedPage = () => {
   const { openModal } = useBookingModal();
-  const { service, loading, error } = useService('pre-designed');
+  const { services, loading, error } = useServices(['pre-designed', 'diving-3-4-day', 'diving-full-day']);
+  const service = services['pre-designed'];
 
   const fadeInUp = {
     initial: { opacity: 0, y: 30 },
@@ -43,7 +44,7 @@ const PreDesignedPage = () => {
     }
   ];
 
-  const loading = mainLoading || optionsLoading;
+
   const sortedPricingOptions = [...pricingOptions].sort((a, b) => a.sortPrice - b.sortPrice);
 
   return (
@@ -163,7 +164,7 @@ const PreDesignedPage = () => {
                           {services[option.slug]?.promo_price ? (
                             <>
                               <span>€{services[option.slug].promo_price}</span>
-                              <span className="text-gray-400 line-through text-sm">€{services[option.slug].base_price}</span>
+                              <span className="text-gray-400 line-through text-sm">€{services[option.slug]?.base_price}</span>
                             </>
                           ) : (
                             <span>{services[option.slug]?.base_price ? `€${services[option.slug].base_price}` : 'Price on request'}</span>

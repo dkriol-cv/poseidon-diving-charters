@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Clock, Loader2 } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
-import { useService } from '@/hooks/useService';
+import { useService, useServices } from '@/hooks/useService';
 
 const ExclusiveCharterPage = () => {
   const { openModal } = useBookingModal();
-  const { service, loading, error } = useService('exclusive-charter');
+  const { services, loading, error } = useServices(['exclusive-charter', 'sunset-charter', 'morning-charter', 'afternoon-charter', 'boat-3-4-day-charter']);
+  const service = services['exclusive-charter'];
 
   const fadeInUp = {
     initial: { opacity: 0, y: 30 },
@@ -53,7 +54,7 @@ const ExclusiveCharterPage = () => {
     }
   ];
 
-  const loading = mainLoading || optionsLoading;
+
 
   return (
     <>
@@ -169,7 +170,7 @@ const ExclusiveCharterPage = () => {
                           {services[option.slug]?.promo_price ? (
                             <>
                               <span>€{services[option.slug].promo_price}</span>
-                              <span className="text-gray-400 line-through text-sm">€{services[option.slug].base_price}</span>
+                              <span className="text-gray-400 line-through text-sm">€{services[option.slug]?.base_price}</span>
                             </>
                           ) : (
                             <span>{services[option.slug]?.base_price ? `€${services[option.slug].base_price}` : 'Price on request'}</span>
