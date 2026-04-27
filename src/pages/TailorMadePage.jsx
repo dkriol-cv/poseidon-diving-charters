@@ -7,6 +7,7 @@ import { Check, MapPin, Clock, Loader2 } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService } from '@/hooks/useService';
+import { formatPrice } from '@/lib/formatters';
 
 const TailorMadePage = () => {
   const { openModal } = useBookingModal();
@@ -104,11 +105,11 @@ const TailorMadePage = () => {
                         <span className="text-3xl font-bold text-[#03c4c9] flex items-baseline gap-2">
                           {service?.promo_price ? (
                             <>
-                              <span>€{service.promo_price}</span>
-                              <span className="text-gray-400 line-through text-sm">€{service?.base_price}</span>
+                              <span>{formatPrice(service.promo_price)}</span>
+                              <span className="text-gray-400 line-through text-sm">{formatPrice(service?.base_price)}</span>
                             </>
                           ) : (
-                            <span>{service?.base_price ? `€${service.base_price}` : 'Price on request'}</span>
+                            <span>{formatPrice(service?.base_price)}</span>
                           )}
                         </span>
                         {service?.duration && (

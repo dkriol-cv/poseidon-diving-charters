@@ -15,15 +15,15 @@ export const formatNumber = (value, decimals = 0) => {
   }).format(num);
 };
 
-export const formatEUR = (value, decimals = 0) => {
-  if (value === null || value === undefined) return '€0';
+export const formatPrice = (value) => {
+  if (!value) return 'Price on request';
 
-  // Using en-GB to maintain the € prefix (e.g., €500) as requested in the desired format,
-  // but with 0 decimal places.
-  return new Intl.NumberFormat('en-GB', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'EUR',
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
   }).format(value);
 };
+
+export const formatEUR = formatPrice;

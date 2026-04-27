@@ -8,12 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Euro, ChevronRight } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import { useServices } from '@/hooks/useService';
+import { formatPrice } from '@/lib/formatters';
 
 const ExperiencesPage = () => {
   const { openModal } = useBookingModal();
   const { services: servicesData, loading } = useServices([
     'tailor-made', 'pre-designed', 'exclusive-charter', 'beach-charter',
-    'private-boat-charter', 'sunset-charter', 'morning-charter', 
+    'sunset-charter', 'morning-charter', 
     'afternoon-charter', 'boat-3-4-day-charter', 'diving-3-4-day', 'diving-full-day'
   ]);
 
@@ -23,19 +24,15 @@ const ExperiencesPage = () => {
     const s = services.find(srv => srv.slug === slug);
     if (!s) return "Price on request";
     
-    // Use promotional price if available
-    const finalPrice = s.promo_price || s.base_price;
-    if (!finalPrice) return "Price on request";
-
     return (
       <span className="flex flex-col sm:flex-row sm:items-baseline gap-2">
         {s.promo_price ? (
           <>
-            <span className="text-[#03c4c9] font-bold">€{s.promo_price}</span>
-            <span className="text-gray-400 line-through text-[10px]">€{s.base_price}</span>
+            <span className="text-[#03c4c9] font-bold">{formatPrice(s.promo_price)}</span>
+            <span className="text-gray-400 line-through text-[10px]">{formatPrice(s.base_price)}</span>
           </>
         ) : (
-          <span>From €{s.base_price}</span>
+          <span>From {formatPrice(s.base_price)}</span>
         )}
       </span>
     );
@@ -50,8 +47,10 @@ const ExperiencesPage = () => {
 
     return (
       <span className="flex items-baseline gap-2">
-        {s.promo_price && <span className="text-gray-400 line-through text-sm mr-1">€{s.base_price}</span>}
-        <span>€{finalPrice}</span>
+        {s.promo_price ? (
+          <span className="text-gray-400 line-through text-sm mr-1">{formatPrice(s.base_price)}</span>
+        ) : null}
+        <span>{formatPrice(finalPrice)}</span>
       </span>
     );
   };

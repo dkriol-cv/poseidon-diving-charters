@@ -8,6 +8,7 @@ import { Check, Clock, Loader2 } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService, useServices } from '@/hooks/useService';
+import { formatPrice } from '@/lib/formatters';
 
 const ExclusiveCharterPage = () => {
   const { openModal } = useBookingModal();
@@ -113,7 +114,7 @@ const ExclusiveCharterPage = () => {
                     {service?.base_price && (
                       <div className="mb-6 p-4 bg-[#03c4c9]/10 border-l-4 border-[#03c4c9] rounded-lg">
                         <p className="text-sm text-[#8c959f] dark:text-gray-400">
-                          <span className="font-bold text-[#03c4c9] text-lg">Starting from €{service.base_price}</span>
+                          <span className="font-bold text-[#03c4c9] text-lg">Starting from {formatPrice(service?.base_price)}</span>
                           {service.duration && <span className="ml-2">• {service.duration}</span>}
                         </p>
                       </div>
@@ -169,11 +170,11 @@ const ExclusiveCharterPage = () => {
                         <span className="text-3xl font-bold text-[#03c4c9] flex items-baseline gap-2">
                           {services[option.slug]?.promo_price ? (
                             <>
-                              <span>€{services[option.slug].promo_price}</span>
-                              <span className="text-gray-400 line-through text-sm">€{services[option.slug]?.base_price}</span>
+                              <span>{formatPrice(services[option.slug].promo_price)}</span>
+                              <span className="text-gray-400 line-through text-sm">{formatPrice(services[option.slug]?.base_price)}</span>
                             </>
                           ) : (
-                            <span>{services[option.slug]?.base_price ? `€${services[option.slug].base_price}` : 'Price on request'}</span>
+                            <span>{formatPrice(services[option.slug]?.base_price)}</span>
                           )}
                         </span>
                       </div>

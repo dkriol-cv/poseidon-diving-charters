@@ -8,6 +8,7 @@ import { MapPin, Waves, Music, Utensils, Users, Loader2 } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService } from '@/hooks/useService';
+import { formatPrice } from '@/lib/formatters';
 
 const BeachCharterPage = () => {
   const { openModal } = useBookingModal();
@@ -178,11 +179,11 @@ const BeachCharterPage = () => {
                   <div className="text-5xl font-bold text-[#03c4c9] mb-2 flex items-baseline gap-3">
                     {service?.promo_price ? (
                       <>
-                        <span>€{service.promo_price}</span>
-                        <span className="text-gray-400 line-through text-xl">€{service?.base_price}</span>
+                        <span>{formatPrice(service.promo_price)}</span>
+                        <span className="text-gray-400 line-through text-xl">{formatPrice(service?.base_price)}</span>
                       </>
                     ) : (
-                      <span>{service?.base_price ? `€${service.base_price}` : 'Price on request'}</span>
+                      <span>{formatPrice(service?.base_price)}</span>
                     )}
                   </div>
                   <p className="text-[#8c959f] dark:text-gray-400 text-lg">
