@@ -163,7 +163,7 @@ const HomePage = () => {
       {/* Experiences Cards Section */}
       <section id="experiences" className="pt-0 pb-28 px-4 bg-[#0b1216]">
         {/* Availability Bar - Using robust margin-top to overlap Hero */}
-        <div className="container mx-auto max-w-5xl relative z-50 -mt-16 px-4">
+        <div className="container mx-auto max-w-5xl relative z-50 -mt-16 mb-20 px-4">
           <div className="bg-white dark:bg-[#162026] rounded-2xl shadow-2xl p-6 md:p-2 border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center gap-4">
             <div className="flex-1 flex items-center gap-4 w-full px-4">
               <div className="w-12 h-12 rounded-xl bg-[#03c4c9]/10 flex items-center justify-center flex-shrink-0">
