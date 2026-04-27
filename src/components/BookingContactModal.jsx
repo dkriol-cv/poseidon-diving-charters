@@ -35,7 +35,6 @@ I would like to book: ${experienceName}
 My details:
 - Preferred date: 
 - Number of guests: 
-- Diving certification/experience: 
 - Special requests: 
 
 Thank you!`;
@@ -54,7 +53,6 @@ I would like to book: ${experienceName}
 My details:
 - Preferred date: 
 - Number of guests: 
-- Diving certification/experience level: 
 - Special requests or questions: 
 
 Looking forward to your response.
