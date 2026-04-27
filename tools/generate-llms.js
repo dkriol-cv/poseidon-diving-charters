@@ -2,181 +2,143 @@
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const CLEAN_CONTENT_REGEX = {
-  comments: /\/\*[\s\S]*?\*\/|\/\/.*$/gm,
-  templateLiterals: /`[\s\S]*?`/g,
-  strings: /'[^']*'|"[^"]*"/g,
-  jsxExpressions: /\{.*?\}/g,
-  htmlEntities: {
-    quot: /&quot;/g,
-    amp: /&amp;/g,
-    lt: /&lt;/g,
-    gt: /&gt;/g,
-    apos: /&apos;/g
-  }
-};
+const SITE_URL = process.env.SITE_URL || 'https://poseidondivingcharters.com';
 
-const EXTRACTION_REGEX = {
-  route: /<Route\s+[^>]*>/g,
-  path: /path=["']([^"']+)["']/,
-  element: /element=\{<(\w+)[^}]*\/?\s*>\}/,
-  helmet: /<Helmet[^>]*?>([\s\S]*?)<\/Helmet>/i,
-  helmetTest: /<Helmet[\s\S]*?<\/Helmet>/i,
-  title: /<title[^>]*?>\s*(.*?)\s*<\/title>/i,
-  description: /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
-};
+// Explicit map: source file (relative to src/pages) -> public URL
+// Mirrors the routes declared in src/App.jsx (admin and dynamic routes excluded)
+const PAGE_MAP = [
+  { file: 'HomePage.jsx',           url: '/'                  },
+  { file: 'ExperiencesPage.jsx',    url: '/experiences'       },
+  { file: 'PreDesignedPage.jsx',    url: '/pre-designed'      },
+  { file: 'TailorMadePage.jsx',     url: '/tailor-made'       },
+  { file: 'ExclusiveCharterPage.jsx', url: '/exclusive-charter' },
+  { file: 'BeachCharterPage.jsx',   url: '/beach-charter'     },
+  { file: 'AboutPage.jsx',          url: '/about'             },
+  { file: 'SustainabilityPage.jsx', url: '/sustainability'    },
+  { file: 'ContactPage.jsx',        url: '/contact'           },
+  { file: 'FAQ.jsx',                url: '/faq'               },
+  { file: 'TermsOfService.jsx',     url: '/terms'             },
+  { file: 'PrivacyPolicy.jsx',      url: '/privacy'           },
+  { file: 'RefundPolicy.jsx',       url: '/refund-policy'     },
+  { file: 'CookiePolicy.jsx',       url: '/cookies'           },
+  { file: 'blog/BlogArchivePage.jsx', url: '/blog'            },
+];
 
-function cleanContent(content) {
-  return content
-    .replace(CLEAN_CONTENT_REGEX.comments, '')
-    .replace(CLEAN_CONTENT_REGEX.templateLiterals, '""')
-    .replace(CLEAN_CONTENT_REGEX.strings, '""');
-}
+const TITLE_RE = /<title[^>]*?>\s*([\s\S]*?)\s*<\/title>/i;
+const DESC_RE  = /<meta\s+name=["']description["']\s+content=(["'])([\s\S]*?)\1/i;
+// Helmet often uses {dynamic || "fallback"} — pull the fallback string from the JSX expression
+const DESC_JSX_RE  = /<meta\s+name=["']description["']\s+content=\{[^}]*?["']([^"']{20,})["'][^}]*?\}/i;
+const TITLE_JSX_RE = /<title[^>]*>\s*\{[^}]*?["']([^"']{5,})["'][^}]*?\}\s*([^<]*)<\/title>/i;
 
 function cleanText(text) {
-  if (!text) return text;
-  
+  if (!text) return '';
   return text
-    .replace(CLEAN_CONTENT_REGEX.jsxExpressions, '')
-    .replace(CLEAN_CONTENT_REGEX.htmlEntities.quot, '"')
-    .replace(CLEAN_CONTENT_REGEX.htmlEntities.amp, '&')
-    .replace(CLEAN_CONTENT_REGEX.htmlEntities.lt, '<')
-    .replace(CLEAN_CONTENT_REGEX.htmlEntities.gt, '>')
-    .replace(CLEAN_CONTENT_REGEX.htmlEntities.apos, "'")
+    .replace(/\s+/g, ' ')
+    .replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .trim();
 }
 
-function extractRoutes(appJsxPath) {
-  if (!fs.existsSync(appJsxPath)) return new Map();
-
-  try {
-    const content = fs.readFileSync(appJsxPath, 'utf8');
-    const routes = new Map();
-    const routeMatches = [...content.matchAll(EXTRACTION_REGEX.route)];
-    
-    for (const match of routeMatches) {
-      const routeTag = match[0];
-      const pathMatch = routeTag.match(EXTRACTION_REGEX.path);
-      const elementMatch = routeTag.match(EXTRACTION_REGEX.element);
-      const isIndex = routeTag.includes('index');
-      
-      if (elementMatch) {
-        const componentName = elementMatch[1];
-        let routePath;
-        
-        if (isIndex) {
-          routePath = '/';
-        } else if (pathMatch) {
-          routePath = pathMatch[1].startsWith('/') ? pathMatch[1] : `/${pathMatch[1]}`;
-        }
-        
-        routes.set(componentName, routePath);
-      }
-    }
-
-    return routes;
-  } catch (error) {
-    return new Map();
+function extractMeta(content) {
+  // Prefer the static fallback string in `service?.title || "Pre-Designed..."` patterns
+  const titleJsx = content.match(TITLE_JSX_RE);
+  let title = titleJsx ? `${titleJsx[1]}${titleJsx[2] || ''}` : null;
+  if (!title) {
+    const t = content.match(TITLE_RE);
+    if (t) title = t[1].replace(/\{[^}]*\}/g, '').replace(/['"]/g, '');
   }
-}
 
-function findReactFiles(dir) {
-  return fs.readdirSync(dir).map(item => path.join(dir, item));
-}
-
-function extractHelmetData(content, filePath, routes) {
-  const cleanedContent = cleanContent(content);
-  
-  if (!EXTRACTION_REGEX.helmetTest.test(cleanedContent)) {
-    return null;
+  let description = null;
+  const descJsx = content.match(DESC_JSX_RE);
+  if (descJsx) description = descJsx[1];
+  if (!description) {
+    const d = content.match(DESC_RE);
+    if (d) description = d[2].replace(/\{[^}]*\}/g, '');
   }
-  
-  const helmetMatch = content.match(EXTRACTION_REGEX.helmet);
-  if (!helmetMatch) return null;
-  
-  const helmetContent = helmetMatch[1];
-  const titleMatch = helmetContent.match(EXTRACTION_REGEX.title);
-  const descMatch = helmetContent.match(EXTRACTION_REGEX.description);
-  
-  const title = cleanText(titleMatch?.[1]);
-  const description = cleanText(descMatch?.[1]);
-  
-  const fileName = path.basename(filePath, path.extname(filePath));
-  const url = routes.length && routes.has(fileName) 
-    ? routes.get(fileName) 
-    : generateFallbackUrl(fileName);
-  
-  return {
-    url,
-    title: title || 'Untitled Page',
-    description: description || 'No description available'
-  };
-}
 
-function generateFallbackUrl(fileName) {
-  const cleanName = fileName.replace(/Page$/, '').toLowerCase();
-  return cleanName === 'app' ? '/' : `/${cleanName}`;
+  return { title: cleanText(title), description: cleanText(description) };
 }
 
 function generateLlmsTxt(pages) {
-  const sortedPages = pages.sort((a, b) => a.title.localeCompare(b.title));
-  const pageEntries = sortedPages.map(page => 
-    `- [${page.title}](${page.url}): ${page.description}`
-  ).join('\n');
-  
-  return `## Pages\n${pageEntries}`;
-}
+  const isExperience = (u) => /^\/(pre-designed|tailor-made|exclusive-charter|beach-charter|experiences)$/.test(u);
+  const isLegal      = (u) => /^\/(terms|privacy|refund-policy|cookies)$/.test(u);
+  const isBlog       = (u) => /^\/blog/.test(u);
 
-function ensureDirectoryExists(dirPath) {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-}
+  const main        = pages.filter(p => !isExperience(p.url) && !isLegal(p.url) && !isBlog(p.url) && p.url !== '/');
+  const home        = pages.find(p => p.url === '/');
+  const experiences = pages.filter(p => isExperience(p.url));
+  const blog        = pages.filter(p => isBlog(p.url));
+  const legal       = pages.filter(p => isLegal(p.url));
 
-function processPageFile(filePath, routes) {
-  try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    return extractHelmetData(content, filePath, routes);
-  } catch (error) {
-    console.error(`❌ Error processing ${filePath}:`, error.message);
-    return null;
+  const fmt = (p) => `- [${p.title}](${SITE_URL}${p.url}): ${p.description}`;
+
+  const out = [];
+  out.push('# Poseidon Diving Charters');
+  out.push('');
+  out.push('> Premium private diving and boat charters operating from Marina de Lagos, Algarve, Portugal. Maximum 4 guests per charter, expert dive guides, premium meals and refreshments included.');
+  out.push('');
+  out.push('Contact: info@poseidondivingcharters.com · +351 924 955 333 · Marina de Lagos (Gate E–I), Lagos, Portugal');
+  out.push('');
+
+  if (home) {
+    out.push('## Home');
+    out.push(fmt(home));
+    out.push('');
   }
+  if (experiences.length) {
+    out.push('## Experiences');
+    out.push(experiences.sort((a, b) => a.url.localeCompare(b.url)).map(fmt).join('\n'));
+    out.push('');
+  }
+  if (main.length) {
+    out.push('## Information');
+    out.push(main.sort((a, b) => a.url.localeCompare(b.url)).map(fmt).join('\n'));
+    out.push('');
+  }
+  if (blog.length) {
+    out.push('## Blog');
+    out.push(blog.map(fmt).join('\n'));
+    out.push('');
+  }
+  if (legal.length) {
+    out.push('## Legal');
+    out.push(legal.sort((a, b) => a.url.localeCompare(b.url)).map(fmt).join('\n'));
+    out.push('');
+  }
+
+  return out.join('\n');
 }
 
 function main() {
   const pagesDir = path.join(process.cwd(), 'src', 'pages');
-  const appJsxPath = path.join(process.cwd(), 'src', 'App.jsx');
-
-  let pages = [];
-  
   if (!fs.existsSync(pagesDir)) {
-    pages.push(processPageFile(appJsxPath, []))
-    pages = pages.filter(Boolean);
-  } else {
-    const routes = extractRoutes(appJsxPath);
-    const reactFiles = findReactFiles(pagesDir);
-
-    pages = reactFiles
-      .map(filePath => processPageFile(filePath, routes))
-      .filter(Boolean);
-  }
-
-  if (pages.length === 0) {
-    console.error('❌ No pages with Helmet components found!');
+    console.error('❌ src/pages not found');
     process.exit(1);
   }
 
+  const pages = [];
+  for (const { file, url } of PAGE_MAP) {
+    const filePath = path.join(pagesDir, file);
+    if (!fs.existsSync(filePath)) {
+      console.warn(`⚠ skipped (missing): ${file}`);
+      continue;
+    }
+    const content = fs.readFileSync(filePath, 'utf8');
+    const meta = extractMeta(content);
+    pages.push({
+      url,
+      title: meta.title || `Poseidon Diving Charters`,
+      description: meta.description || 'Premium private diving and boat charters in Lagos, Algarve.',
+    });
+  }
 
-  const llmsTxtContent = generateLlmsTxt(pages);
-  const outputPath = path.join(process.cwd(), 'public', 'llms.txt');
-  
-  ensureDirectoryExists(path.dirname(outputPath));
-  fs.writeFileSync(outputPath, llmsTxtContent, 'utf8');
+  const outPath = path.join(process.cwd(), 'public', 'llms.txt');
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, generateLlmsTxt(pages), 'utf8');
+  console.log(`✓ llms.txt written (${pages.length} pages)`);
 }
 
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
-
-if (isMainModule) {
-  main();
-}
+const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (isMainModule) main();
