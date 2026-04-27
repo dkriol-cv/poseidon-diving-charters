@@ -4,12 +4,15 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Users, Anchor, MapPin, CheckCircle2, MessageCircle } from 'lucide-react';
+import { Users, Anchor, MapPin, CheckCircle2, MessageCircle, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import BlogPreview from '@/components/blog/BlogPreview';
+import AvailabilityCalendar from '@/components/AvailabilityCalendar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const HomePage = () => {
   const { openModal } = useBookingModal();
+  const [showCalendar, setShowCalendar] = React.useState(false);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 40 },
@@ -156,8 +159,52 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Floating Action Button - Fixed Mobile/Desktop */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="fixed bottom-6 right-6 z-50 sm:bottom-10 sm:right-10"
+      >
+        <Button
+          onClick={() => setShowCalendar(true)}
+          className="rounded-full w-14 h-14 sm:w-auto sm:h-14 sm:px-6 shadow-2xl bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white border-none flex items-center justify-center gap-2 group transition-all duration-300"
+        >
+          <CalendarIcon className="w-6 h-6 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
+          <span className="hidden sm:block font-bold">CHECK DATES</span>
+        </Button>
+      </motion.div>
+
       {/* Experiences Cards Section */}
-      <section id="experiences" className="py-28 px-4 bg-[#0b1216]">
+      <section id="experiences" className="pt-0 pb-28 px-4 bg-[#0b1216]">
+        {/* Availability Bar - Integrated into dark section to avoid white gaps */}
+        <div className="container mx-auto max-w-5xl relative z-40 -translate-y-1/2">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-[#162026] rounded-2xl shadow-2xl p-6 md:p-2 border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center gap-4"
+          >
+            <div className="flex-1 flex items-center gap-4 w-full px-4">
+              <div className="w-12 h-12 rounded-xl bg-[#03c4c9]/10 flex items-center justify-center flex-shrink-0">
+                <CalendarIcon className="text-[#03c4c9]" size={24} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-bold text-[#03c4c9] uppercase tracking-widest">Plan Your Charter</p>
+                <p className="text-sm text-[#2d353b] dark:text-gray-300 font-medium">Check real-time availability for our private vessel.</p>
+              </div>
+            </div>
+            
+            <div className="w-full md:w-auto p-2">
+              <Button 
+                onClick={() => setShowCalendar(true)}
+                className="w-full md:w-auto h-14 px-10 bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white font-bold rounded-xl transition-all duration-300 group"
+              >
+                CHECK AVAILABILITY <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+
         <div className="container mx-auto max-w-7xl">
           <motion.div {...fadeInUp} className="mb-16 grid md:grid-cols-2 gap-8 items-end">
             <div>
@@ -242,6 +289,28 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      {/* Calendar Modal */}
+      <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
+        <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-none bg-transparent">
+          <div className="bg-white dark:bg-[#111a1f] p-6 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                <CalendarIcon className="text-[#03c4c9]" />
+                Charter Availability
+              </DialogTitle>
+              <DialogDescription className="text-base">
+                Browse our real-time schedule. Greyed out dates are fully booked.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="bg-gray-50 dark:bg-[#0b1216] p-4 rounded-xl mb-6">
+              <AvailabilityCalendar 
+                serviceName="General Charter Inquiry" 
+                experienceImage={heroImage} 
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

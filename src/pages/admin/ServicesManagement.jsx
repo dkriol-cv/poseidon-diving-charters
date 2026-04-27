@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, DollarSign, Save, RefreshCw, ShoppingBag, Eye, EyeOff } from 'lucide-react';
+import { Loader2, DollarSign, Save, RefreshCw, ShoppingBag, Eye, EyeOff, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,6 @@ const REQUIRED_SERVICES = [
   // Pre-Designed Diving
   { slug: 'diving-3-4-day', name: '¾ Day Diving Charter', base_price: 1250 },
   { slug: 'diving-full-day', name: 'Full Day Diving Charter', base_price: 1500 },
-  { slug: 'pre-designed', name: 'Pre-Designed Diving Header (Optional)', base_price: 0 },
   
   // Private Boat Charter
   { slug: 'sunset-charter', name: 'Sunset Boat Charter', base_price: 500 },
@@ -34,9 +33,16 @@ const ServicesManagement = () => {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [savedIds, setSavedIds] = useState(new Set());
 
   useEffect(() => {
     fetchServices();
+    // One-time cleanup of duplicated service as requested
+    const cleanupDuplicates = async () => {
+      await supabase.from('services').delete().eq('slug', 'pre-designed-diving-charter');
+      await supabase.from('services').delete().eq('slug', 'pre-designed');
+    };
+    cleanupDuplicates();
   }, []);
 
   const fetchServices = async () => {
@@ -108,6 +114,15 @@ const ServicesManagement = () => {
 
   const handleFieldChange = (id, field, value) => {
     setServices(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+    
+    // Clear "Saved" state when user starts typing again
+    if (savedIds.has(id)) {
+      setSavedIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
   };
 
   const handleSave = async (service) => {
@@ -131,6 +146,9 @@ const ServicesManagement = () => {
         .eq('id', service.id);
 
       if (error) throw error;
+
+      // Mark as saved
+      setSavedIds(prev => new Set(prev).add(service.id));
 
       toast({
         title: "Saved!",
@@ -191,7 +209,7 @@ const ServicesManagement = () => {
             <div className="space-y-12">
               {[
                 { title: "Tailor-Made Experience", slugs: ['tailor-made'] },
-                { title: "Pre-Designed Diving Charters", slugs: ['diving-3-4-day', 'diving-full-day', 'pre-designed'] },
+                { title: "Pre-Designed Diving Charters", slugs: ['diving-3-4-day', 'diving-full-day'] },
                 { title: "Private Boat Charters", slugs: ['sunset-charter', 'morning-charter', 'afternoon-charter', 'boat-3-4-day-charter', 'exclusive-charter'] },
                 { title: "Other Services", slugs: ['beach-charter'] }
               ].map((group, gIdx) => {
@@ -270,9 +288,19 @@ const ServicesManagement = () => {
                                 onClick={() => handleSave(service)} 
                                 disabled={savingId === service.id}
                                 size="sm"
-                                className="bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white font-bold w-full"
+                                className={`font-bold w-full transition-all duration-300 ${
+                                  savedIds.has(service.id) 
+                                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                                    : 'bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white'
+                                }`}
                               >
-                                {savingId === service.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save size={16} className="mr-2" /> SAVE</>}
+                                {savingId === service.id ? (
+                                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+                                ) : savedIds.has(service.id) ? (
+                                  <><Check size={16} className="mr-2" /> Saved</>
+                                ) : (
+                                  <><Save size={16} className="mr-2" /> Save</>
+                                )}
                               </Button>
                             </div>
                           </CardContent>
