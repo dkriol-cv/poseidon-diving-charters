@@ -94,32 +94,8 @@ const TailorMadePage = () => {
                 </div>
 
                 <div className="bg-[#03c4c9]/10 border-l-4 border-[#03c4c9] p-6 rounded-lg mb-8">
-                  <div className="flex items-baseline gap-2 mb-2">
-                    {loading ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin text-[#03c4c9]" />
-                        <span className="text-lg text-[#8c959f]">Loading price...</span>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="text-3xl font-bold text-[#03c4c9] flex items-baseline gap-2">
-                          {service?.promo_price ? (
-                            <>
-                              <span>{formatPrice(service.promo_price)}</span>
-                              <span className="text-gray-400 line-through text-sm">{formatPrice(service?.base_price)}</span>
-                            </>
-                          ) : (
-                            <span>{formatPrice(service?.base_price)}</span>
-                          )}
-                        </span>
-                        {service?.duration && (
-                          <span className="text-sm text-[#8c959f]">• {service.duration}</span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  <p className="text-sm text-[#8c959f] dark:text-gray-400">
-                    This tailor‑made charter is fully personalized. Premium Meals & Refreshments are included. Final price and remaining inclusions are determined in consultation with our team—contact us to design your unique diving experience.
+                  <p className="text-[#8c959f] dark:text-gray-400 italic leading-relaxed">
+                    This tailor-made charter is fully personalized. Premium Meals & Refreshments are included. Price and remaining inclusions are determined in consultation with our team—contact us to design your unique diving experience.
                   </p>
                 </div>
 
