@@ -102,7 +102,7 @@ const TailorMadePage = () => {
                     ) : (
                       <>
                         <span className="text-3xl font-bold text-[#03c4c9]">
-                          {service?.base_price ? `From €${service.base_price}` : 'Price on request'}
+                          {service?.base_price ? `€${service.base_price}` : 'Price on request'}
                         </span>
                         {service?.duration && (
                           <span className="text-sm text-[#8c959f]">• {service.duration}</span>

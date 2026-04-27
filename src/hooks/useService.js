@@ -20,7 +20,7 @@ export const useService = (slug) => {
 
       const { data, error: fetchError } = await supabase
         .from('services')
-        .select('id, slug, title, base_price, description, is_active')
+        .select('id, slug, name, title, base_price, description, is_active')
         .eq('slug', slug)
         .eq('is_active', true)
         .single();
@@ -62,4 +62,44 @@ export const useService = (slug) => {
   }, [fetchService]);
 
   return { service, loading, error, refetch };
+};
+
+export const useServices = (slugs = []) => {
+  const [services, setServices] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchServices = useCallback(async () => {
+    if (!slugs || slugs.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data, error: fetchError } = await supabase
+        .from('services')
+        .select('id, slug, name, title, base_price, description, is_active')
+        .in('slug', slugs);
+
+      if (fetchError) throw fetchError;
+
+      const servicesMap = {};
+      data?.forEach(s => {
+        servicesMap[s.slug] = s;
+      });
+      setServices(servicesMap);
+    } catch (err) {
+      console.error('Error fetching services:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [JSON.stringify(slugs)]);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  return { services, loading, error, refetch: fetchServices };
 };

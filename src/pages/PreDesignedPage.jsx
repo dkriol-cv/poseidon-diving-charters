@@ -24,23 +24,26 @@ const PreDesignedPage = () => {
 
   const pricingOptions = [
     {
+      slug: 'diving-3-4-day',
       title: "¾ Day Diving Charter",
       duration: "5.5 Hours",
       time: "09:00 – 14:30",
-      price: "1,250",
+      defaultPrice: "1,250",
       sortPrice: 1250,
       description: "A complete diving experience with Premium Meals & Refreshments included, sunbathing and other activities packed into a convenient 3/4-day."
     },
     {
+      slug: 'diving-full-day',
       title: "Full Day Diving Charter",
       duration: "7.5 Hours",
       time: "09:00 – 16:30",
-      price: "1,500",
+      defaultPrice: "1,500",
       sortPrice: 1500,
       description: "Enjoy a full day diving charter for extra leisure time on the sunbeds. With this option, it's possible to go long-distance diving."
     }
   ];
 
+  const loading = mainLoading || optionsLoading;
   const sortedPricingOptions = [...pricingOptions].sort((a, b) => a.sortPrice - b.sortPrice);
 
   return (
@@ -156,7 +159,9 @@ const PreDesignedPage = () => {
 
                     <div className="mb-6">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-[#03c4c9]">€{option.price}</span>
+                        <span className="text-3xl font-bold text-[#03c4c9]">
+                          {services[option.slug]?.base_price ? `€${services[option.slug].base_price}` : 'Price on request'}
+                        </span>
                       </div>
                       <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>
                     </div>

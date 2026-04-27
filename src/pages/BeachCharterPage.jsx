@@ -176,7 +176,7 @@ const BeachCharterPage = () => {
               ) : (
                 <>
                   <p className="text-5xl font-bold text-[#03c4c9] mb-2">
-                    {service?.base_price ? `From €${service.base_price}` : 'Price on request'}
+                    {service?.base_price ? `€${service.base_price}` : 'Price on request'}
                   </p>
                   <p className="text-[#8c959f] dark:text-gray-400 text-lg">
                     {service?.duration ? `${service.duration} for groups up to four people` : 'per hour for groups up to four people'}

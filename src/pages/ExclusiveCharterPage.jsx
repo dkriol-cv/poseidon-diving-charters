@@ -24,34 +24,36 @@ const ExclusiveCharterPage = () => {
 
   const charterOptions = [
     {
+      slug: 'sunset-charter',
       title: "Sunset Boat Charter",
       duration: "2.5 Hours",
       time: "18:00 - 20:30",
-      price: "500",
       description: "Witness the magical Algarve sunset from the privacy of your own boat. Romantic and unforgettable."
     },
     {
+      slug: 'morning-charter',
       title: "Morning Boat Charter",
       duration: "3.5 Hours",
       time: "09:30 - 13:00",
-      price: "600",
       description: "Start your day on the water. Ideal for families who want to enjoy the calm morning sea."
     },
     {
+      slug: 'afternoon-charter',
       title: "Afternoon Boat Charter",
       duration: "3.5 Hours",
       time: "13:30 - 17:00",
-      price: "600",
       description: "Enjoy the warmest part of the day. Perfect for swimming and sunbathing."
     },
     {
+      slug: 'boat-3-4-day-charter',
       title: "¾ Day Boat Charter",
       duration: "5.5 Hours",
       time: "09:30 - 15:00",
-      price: "700",
       description: "Our most popular extended option. Perfect for a leisurely day at sea — Premium Meals & Refreshments included."
     }
   ];
+
+  const loading = mainLoading || optionsLoading;
 
   return (
     <>
@@ -163,7 +165,9 @@ const ExclusiveCharterPage = () => {
 
                     <div className="mb-6">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-[#03c4c9]">€{option.price}</span>
+                        <span className="text-3xl font-bold text-[#03c4c9]">
+                          {services[option.slug]?.base_price ? `€${services[option.slug].base_price}` : 'Price on request'}
+                        </span>
                       </div>
                       <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>
                     </div>

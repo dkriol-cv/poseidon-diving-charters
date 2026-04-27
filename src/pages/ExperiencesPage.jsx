@@ -7,9 +7,39 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Euro, ChevronRight } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
+import supabase from '@/lib/customSupabaseClient';
 
 const ExperiencesPage = () => {
   const { openModal } = useBookingModal();
+  const [services, setServices] = React.useState([]);
+  const [loadingPrices, setLoadingPrices] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        const { data } = await supabase
+          .from('services')
+          .select('slug, base_price');
+        setServices(data || []);
+      } catch (error) {
+        console.error('Error fetching prices:', error);
+      } finally {
+        setLoadingPrices(false);
+      }
+    };
+    fetchPrices();
+  }, []);
+
+  const getPrice = (slug) => {
+    const service = services.find(s => s.slug === slug);
+    if (!service || !service.base_price) return "Price on request";
+    return `From €${service.base_price}`;
+  };
+
+  const getRawPrice = (slug) => {
+    const service = services.find(s => s.slug === slug);
+    return service?.base_price ? `€${service.base_price}` : "Price on request";
+  };
 
   const fadeInUp = {
     initial: { opacity: 0, y: 24 },
@@ -68,7 +98,7 @@ const ExperiencesPage = () => {
                 <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Clock size={16} className="mr-2 text-[#03c4c9]" />7.5 Hours</div>
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Users size={16} className="mr-2 text-[#03c4c9]" />Max 4 guests</div>
-                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 col-span-2"><Euro size={16} className="mr-2 text-[#03c4c9]" />From €1,600</div>
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 col-span-2"><Euro size={16} className="mr-2 text-[#03c4c9]" />{getPrice('tailor-made')}</div>
                 </div>
                 <div className="mt-auto space-y-3">
                   <Button onClick={() => openModal('Tailor-made diving charter', tailorMadeImage)} className={primaryBtn}>BOOK NOW</Button>
@@ -88,7 +118,7 @@ const ExperiencesPage = () => {
                 <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Clock size={16} className="mr-2 text-[#03c4c9]" />5.5 or 7.5 Hours</div>
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Users size={16} className="mr-2 text-[#03c4c9]" />Max 4 guests</div>
-                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 col-span-2"><Euro size={16} className="mr-2 text-[#03c4c9]" />€1,250 / €1,500</div>
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 col-span-2"><Euro size={16} className="mr-2 text-[#03c4c9]" />{getPrice('pre-designed')}</div>
                 </div>
                 <div className="mt-auto space-y-3">
                   <Button onClick={() => openModal('Pre-designed diving charter', preDesignedImage)} className={primaryBtn}>BOOK NOW</Button>
@@ -108,7 +138,7 @@ const ExperiencesPage = () => {
                 <div className="grid grid-cols-2 gap-4 mb-6 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Clock size={16} className="mr-2 text-[#03c4c9]" />2.5 to 5.5 Hours</div>
                   <div className="flex items-center text-xs text-gray-500 dark:text-gray-400"><Users size={16} className="mr-2 text-[#03c4c9]" />Max 4 guests</div>
-                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 col-span-2"><Euro size={16} className="mr-2 text-[#03c4c9]" />From €500</div>
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 col-span-2"><Euro size={16} className="mr-2 text-[#03c4c9]" />{getPrice('exclusive-charter')}</div>
                 </div>
                 <div className="mt-auto space-y-3">
                   <Button onClick={() => openModal('Private Boat Charter', privateBoatImage)} className={primaryBtn}>BOOK NOW</Button>
@@ -131,7 +161,7 @@ const ExperiencesPage = () => {
               <Badge className="absolute top-4 right-4 bg-[#03c4c9] hover:bg-[#02aeb3] text-white border-none">Max 4 Guests</Badge>
               <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">¾ Day Diving Charter</h3></div>
               <div className="mb-6">
-                <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">€1,250</span></div>
+                <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">{getRawPrice('pre-designed')}</span></div>
                 <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>
               </div>
               <div className="space-y-3 mb-6 flex-grow">
@@ -147,7 +177,7 @@ const ExperiencesPage = () => {
               <Badge className="absolute top-4 right-4 bg-[#03c4c9] hover:bg-[#02aeb3] text-white border-none">Max 4 Guests</Badge>
               <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">Full Day Diving Charter</h3></div>
               <div className="mb-6">
-                <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">€1,500</span></div>
+                <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">{getRawPrice('diving-full-day')}</span></div>
                 <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>
               </div>
               <div className="space-y-3 mb-6 flex-grow">
@@ -170,10 +200,10 @@ const ExperiencesPage = () => {
           </motion.div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {[
-              { title: 'Sunset Boat Charter', time: '2.5 Hours (18:00 - 20:30)', price: '€500', desc: 'Witness the magical Algarve sunset from the privacy of your own boat.' },
-              { title: 'Morning Boat Charter', time: '3.5 Hours (09:30 - 13:00)', price: '€600', desc: 'Start your day on the water. Ideal for families who want to enjoy the calm morning sea.' },
-              { title: 'Afternoon Boat Charter', time: '3.5 Hours (13:30 - 17:00)', price: '€600', desc: 'Enjoy the warmest part of the day. Perfect for swimming and sunbathing.' },
-              { title: '¾ Day Boat Charter', time: '5.5 Hours (09:30 - 15:00)', price: '€700', desc: 'Our most popular extended option. Perfect for a leisurely day at sea.' }
+              { title: 'Sunset Boat Charter', time: '2.5 Hours (18:00 - 20:30)', price: getRawPrice('sunset-charter'), desc: 'Witness the magical Algarve sunset from the privacy of your own boat.' },
+              { title: 'Morning Boat Charter', time: '3.5 Hours (09:30 - 13:00)', price: getRawPrice('morning-charter'), desc: 'Start your day on the water. Ideal for families who want to enjoy the calm morning sea.' },
+              { title: 'Afternoon Boat Charter', time: '3.5 Hours (13:30 - 17:00)', price: getRawPrice('afternoon-charter'), desc: 'Enjoy the warmest part of the day. Perfect for swimming and sunbathing.' },
+              { title: '¾ Day Boat Charter', time: '5.5 Hours (09:30 - 15:00)', price: getRawPrice('boat-3-4-day-charter'), desc: 'Our most popular extended option. Perfect for a leisurely day at sea.' }
             ].map((option, idx) => (
               <motion.div key={idx} {...fadeInUp} transition={{ delay: idx * 0.05 }} className="bg-white dark:bg-[#162026] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm hover:shadow-xl hover:border-[#03c4c9] transition-all duration-300 flex flex-col relative h-full">
                 <Badge className="absolute top-4 right-4 bg-[#03c4c9] hover:bg-[#02aeb3] text-white border-none">Max 4 Guests</Badge>
