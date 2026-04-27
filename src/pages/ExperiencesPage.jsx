@@ -178,9 +178,9 @@ const ExperiencesPage = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
             <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="bg-white dark:bg-[#162026] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm hover:shadow-xl hover:border-[#03c4c9] transition-all duration-300 flex flex-col relative h-full">
               <Badge className="absolute top-4 right-4 bg-[#03c4c9] hover:bg-[#02aeb3] text-white border-none">Max 4 Guests</Badge>
-              <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">{getName('pre-designed', '¾ Day Diving Charter')}</h3></div>
+              <div className="mt-8 mb-2"><h3 className="text-xl font-bold text-[#2d353b] dark:text-white">{getName('diving-3-4-day', 'Diving ¾ Day')}</h3></div>
               <div className="mb-6">
-                <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">{getRawPrice('pre-designed')}</span></div>
+                <div className="flex items-baseline gap-1"><span className="text-3xl font-bold text-[#03c4c9]">{getRawPrice('diving-3-4-day')}</span></div>
                 <span className="text-xs text-[#8c959f] uppercase tracking-wider font-bold">Total Price</span>
               </div>
               <div className="space-y-3 mb-6 flex-grow">
