@@ -322,7 +322,8 @@ const ServicesManagement = () => {
                           </CardContent>
                         </Card>
                       ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
