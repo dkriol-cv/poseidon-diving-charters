@@ -159,20 +159,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Floating Action Button - Fixed Mobile/Desktop */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="fixed bottom-6 right-6 z-50 sm:bottom-10 sm:right-10"
-      >
-        <Button
-          onClick={() => setShowCalendar(true)}
-          className="rounded-full w-14 h-14 sm:w-auto sm:h-14 sm:px-6 shadow-2xl bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white border-none flex items-center justify-center gap-2 group transition-all duration-300"
-        >
-          <CalendarIcon className="w-6 h-6 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
-          <span className="hidden sm:block font-bold">CHECK DATES</span>
-        </Button>
-      </motion.div>
 
       {/* Experiences Cards Section */}
       <section id="experiences" className="pt-0 pb-28 px-4 bg-[#0b1216]">
