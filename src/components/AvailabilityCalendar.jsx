@@ -264,6 +264,22 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
         </button>
       </div>
 
+      {/* Legend */}
+      <div className="mt-4 flex items-center gap-4 flex-wrap">
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-transparent" />
+          <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Available</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+          <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Partial</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Full</span>
+        </span>
+      </div>
+
       {/* Actions: More dates + Book Now */}
       <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
         <button
