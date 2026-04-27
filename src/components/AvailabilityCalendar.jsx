@@ -1,100 +1,60 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 
+const MONTH_SHORT = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DAY_SHORT   = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const MAX_DAYS    = 90;
+
 function isFullDay(start, end) {
   return (start || '08:00') <= '08:00' && (end || '18:00') >= '18:00';
 }
 
-const MONTH_NAMES = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December'
-];
-const DAY_NAMES = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+function toLocalDateStr(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 
-function MonthGrid({ year, month, slotsByDate }) {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const daysInMonth     = new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
-
-  const getDayState = (dateStr) => {
-    const slots = slotsByDate[dateStr];
-    if (!slots || slots.length === 0) return 'available';
-    if (slots.some(s => isFullDay(s.start_time, s.end_time))) return 'full';
-    return 'partial';
-  };
-
-  const cells = [];
-  for (let i = 0; i < firstDayOfMonth; i++) cells.push(<div key={`e-${i}`} />);
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date    = new Date(year, month, day);
-    // Use local date string to avoid UTC offset issues
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isPast  = date < today;
-    const state   = getDayState(dateStr);
-
-    cells.push(
-      <div key={dateStr} className="flex items-center justify-center py-0.5">
-        <div className={cn(
-          'w-8 h-8 flex items-center justify-center rounded-full text-xs font-medium select-none',
-          isPast && 'text-gray-300 dark:text-gray-600',
-          !isPast && state === 'available' && 'bg-emerald-500 text-white font-semibold',
-          !isPast && state === 'partial'   && 'bg-amber-400 text-white font-semibold',
-          !isPast && state === 'full'      && 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 line-through',
-        )}>
-          {day}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-bold text-[#2d353b] dark:text-white text-center mb-3 tracking-wide">
-        {MONTH_NAMES[month]} {year}
-      </p>
-      <div className="grid grid-cols-7 mb-1">
-        {DAY_NAMES.map(d => (
-          <div key={d} className="text-center text-[10px] font-semibold text-gray-400 uppercase">{d}</div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7">{cells}</div>
-    </div>
-  );
+function addDays(base, n) {
+  const d = new Date(base);
+  d.setDate(d.getDate() + n);
+  return d;
 }
 
 const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
   const { openModal } = useBookingModal();
-  const today         = new Date();
-  const [baseMonth, setBaseMonth] = useState({ year: today.getFullYear(), month: today.getMonth() });
+
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  // How many cards to show changes based on screen width via CSS;
+  // we track offset (days from today shown at left edge)
+  const [offset, setOffset]         = useState(0);
   const [slotsByDate, setSlotsByDate] = useState({});
   const [loading, setLoading]         = useState(true);
-  const fetchingRef = useRef(false);
+  const fetchingRef                   = useRef(false);
 
-  const second = baseMonth.month === 11
-    ? { year: baseMonth.year + 1, month: 0 }
-    : { year: baseMonth.year,     month: baseMonth.month + 1 };
+  // Build the full 90-day list once
+  const allDates = useMemo(
+    () => Array.from({ length: MAX_DAYS }, (_, i) => addDays(today, i)),
+    [today]
+  );
 
   const fetchAvailability = useCallback(async () => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     try {
-      const startDate = `${baseMonth.year}-${String(baseMonth.month + 1).padStart(2, '0')}-01`;
-      const endDate   = (() => {
-        const d = new Date(second.year, second.month + 1, 0);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      })();
-
       const { data, error } = await supabase
         .from('availability')
         .select('date, start_time, end_time')
         .eq('status', 'unavailable')
-        .gte('date', startDate)
-        .lte('date', endDate);
+        .gte('date', toLocalDateStr(today))
+        .lte('date', toLocalDateStr(allDates[MAX_DAYS - 1]));
 
       if (!error) {
         const map = {};
@@ -108,100 +68,168 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
       setLoading(false);
       fetchingRef.current = false;
     }
-  }, [baseMonth.year, baseMonth.month]);
+  }, [today, allDates]);
 
-  useEffect(() => {
-    setLoading(true);
-    fetchAvailability();
-  }, [fetchAvailability]);
+  useEffect(() => { fetchAvailability(); }, [fetchAvailability]);
 
   useEffect(() => {
     const ch = supabase
-      .channel(`avail-calendar-${baseMonth.year}-${baseMonth.month}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'availability' }, () => fetchAvailability())
+      .channel('avail-strip')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'availability' }, fetchAvailability)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [baseMonth.year, baseMonth.month]);
+  }, [fetchAvailability]);
 
-  const handlePrev = () => {
-    const now = new Date();
-    if (baseMonth.year === now.getFullYear() && baseMonth.month === now.getMonth()) return;
-    setBaseMonth(prev =>
-      prev.month === 0
-        ? { year: prev.year - 1, month: 11 }
-        : { year: prev.year,     month: prev.month - 1 }
-    );
+  const getDayState = (date) => {
+    const slots = slotsByDate[toLocalDateStr(date)];
+    if (!slots || slots.length === 0) return 'available';
+    if (slots.some(s => isFullDay(s.start_time, s.end_time))) return 'full';
+    return 'partial';
   };
 
-  const handleNext = () => {
-    const max = new Date(); max.setMonth(max.getMonth() + 11);
-    const nextYear  = baseMonth.month === 11 ? baseMonth.year + 1 : baseMonth.year;
-    const nextMonth = baseMonth.month === 11 ? 0 : baseMonth.month + 1;
-    if (new Date(nextYear, nextMonth, 1) > max) return;
-    setBaseMonth({ year: nextYear, month: nextMonth });
-  };
+  // STEP controls how many cards to advance — matches the CSS-visible count
+  // We use 4 on mobile, 7 on desktop via a hidden ref approach,
+  // but a simpler fixed step of 7 works well enough.
+  const STEP = 7;
 
-  const isAtStart = baseMonth.year === today.getFullYear() && baseMonth.month === today.getMonth();
+  const canPrev = offset > 0;
+  const canNext = offset + STEP < MAX_DAYS;
+
+  const handlePrev = () => setOffset(o => Math.max(0, o - STEP));
+  const handleNext = () => setOffset(o => Math.min(MAX_DAYS - STEP, o + STEP));
+
+  // Slice enough dates to fill; CSS hides the extras on small screens
+  const visible = allDates.slice(offset, offset + STEP);
 
   return (
-    <div className="w-full bg-white dark:bg-[#1a2530] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700/50 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/80 dark:bg-black/20">
+    <div className="w-full">
+      {/* Label row */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-bold text-[#2d353b] dark:text-white tracking-tight">
+          Check availability
+        </span>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Live Availability</span>
-          </div>
           {loading && <Loader2 className="w-3 h-3 animate-spin text-[#03c4c9]" />}
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handlePrev}
-            disabled={isAtStart}
-            className={cn(
-              'p-1.5 rounded-lg transition-colors',
-              isAtStart ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-400'
-            )}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleNext}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-400 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Live</span>
+          </div>
         </div>
       </div>
 
-      {/* Two-month grid */}
-      <div className="flex flex-col sm:flex-row gap-6 px-5 py-4">
-        <MonthGrid year={baseMonth.year} month={baseMonth.month} slotsByDate={slotsByDate} />
-        <div className="hidden sm:block w-px bg-gray-100 dark:bg-gray-700/50 self-stretch" />
-        <MonthGrid year={second.year} month={second.month} slotsByDate={slotsByDate} />
+      {/* Strip */}
+      <div className="flex items-stretch gap-1.5">
+        {/* Prev */}
+        <button
+          onClick={handlePrev}
+          disabled={!canPrev}
+          aria-label="Previous dates"
+          className="flex items-center justify-center w-7 flex-shrink-0 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 disabled:opacity-25 disabled:cursor-not-allowed transition-colors bg-white dark:bg-[#1a2530]"
+        >
+          <ChevronLeft className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+        </button>
+
+        {/* Date cards */}
+        <div className="flex gap-1.5 flex-1 min-w-0">
+          {visible.map((date, i) => {
+            const state    = getDayState(date);
+            const isToday  = offset === 0 && i === 0;
+            const prevDate = visible[i - 1];
+            const showMonth = i === 0 || date.getMonth() !== prevDate.getMonth();
+
+            return (
+              <div
+                key={toLocalDateStr(date)}
+                className={cn(
+                  'flex flex-col flex-1 min-w-0',
+                  // Hide later cards on small screens to avoid overflow
+                  i >= 4 && 'hidden sm:flex',
+                  i >= 6 && 'sm:hidden md:flex',
+                )}
+              >
+                {/* Month label */}
+                <span className={cn(
+                  'text-[9px] font-bold uppercase tracking-wider text-center mb-1 leading-none',
+                  showMonth ? 'text-gray-400 dark:text-gray-500' : 'text-transparent select-none'
+                )}>
+                  {MONTH_SHORT[date.getMonth()]} {date.getFullYear()}
+                </span>
+
+                {/* Card */}
+                <button
+                  onClick={() => state !== 'full' && openModal(serviceName, experienceImage)}
+                  disabled={state === 'full'}
+                  className={cn(
+                    'flex flex-col items-center justify-center py-2.5 px-1 rounded-xl border transition-all duration-150 gap-0.5',
+                    state === 'available' && !isToday &&
+                      'bg-white dark:bg-[#1a2530] border-gray-200 dark:border-gray-700 hover:border-[#03c4c9] dark:hover:border-[#03c4c9] hover:shadow-sm cursor-pointer',
+                    state === 'available' && isToday &&
+                      'bg-gray-50 dark:bg-[#111a1f] border-gray-200 dark:border-gray-700 cursor-pointer hover:border-[#03c4c9]',
+                    state === 'partial' &&
+                      'bg-amber-50 dark:bg-amber-900/10 border-amber-300 dark:border-amber-700 hover:border-amber-500 cursor-pointer',
+                    state === 'full' &&
+                      'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 cursor-not-allowed opacity-50',
+                  )}
+                >
+                  <span className={cn(
+                    'text-[10px] font-semibold uppercase tracking-wide leading-none',
+                    isToday ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'
+                  )}>
+                    {isToday ? 'TODAY' : DAY_SHORT[date.getDay()]}
+                  </span>
+                  <span className={cn(
+                    'text-lg font-bold leading-tight',
+                    state === 'full' ? 'text-gray-300 dark:text-gray-600 line-through' :
+                    isToday        ? 'text-gray-400 dark:text-gray-500' :
+                                     'text-[#2d353b] dark:text-white'
+                  )}>
+                    {date.getDate()}
+                  </span>
+                  {/* Availability dot */}
+                  {state === 'partial' && (
+                    <span className="w-1 h-1 rounded-full bg-amber-400 mt-0.5" />
+                  )}
+                  {state === 'available' && !isToday && (
+                    <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Next */}
+        <button
+          onClick={handleNext}
+          disabled={!canNext}
+          aria-label="Next dates"
+          className="flex items-center justify-center w-7 flex-shrink-0 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 disabled:opacity-25 disabled:cursor-not-allowed transition-colors bg-white dark:bg-[#1a2530]"
+        >
+          <ChevronRight className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+        </button>
       </div>
 
-      {/* Footer: legend + CTA */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/80 dark:bg-black/20">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
-            <span className="text-[11px] text-gray-500 dark:text-gray-400">Available</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-amber-400" />
-            <span className="text-[11px] text-gray-500 dark:text-gray-400">Partial</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600" />
-            <span className="text-[11px] text-gray-500 dark:text-gray-400">Unavailable</span>
-          </div>
+      {/* Footer */}
+      <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+            <span className="text-[10px] text-gray-400">Available</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+            <span className="text-[10px] text-gray-400">Partial</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 inline-block" />
+            <span className="text-[10px] text-gray-400">Full</span>
+          </span>
         </div>
         <button
           onClick={() => openModal(serviceName, experienceImage)}
-          className="shrink-0 px-5 py-2 bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white text-sm font-bold rounded-lg transition-all duration-200 whitespace-nowrap"
+          className="text-xs font-bold text-[#03c4c9] hover:text-[#f5c842] transition-colors"
         >
-          BOOK NOW
+          BOOK NOW →
         </button>
       </div>
     </div>

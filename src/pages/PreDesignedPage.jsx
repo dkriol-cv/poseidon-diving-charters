@@ -102,7 +102,7 @@ const PreDesignedPage = () => {
                     {service?.base_price && (
                       <div className="mb-6 p-4 bg-[#03c4c9]/10 border-l-4 border-[#03c4c9] rounded-lg">
                         <p className="text-sm text-[#8c959f] dark:text-gray-400">
-                          <span className="font-bold text-[#03c4c9] text-lg">Starting from €{service.price}</span>
+                          <span className="font-bold text-[#03c4c9] text-lg">Starting from €{service.base_price}</span>
                           {service.duration && <span className="ml-2">• {service.duration}</span>}
                         </p>
                       </div>
