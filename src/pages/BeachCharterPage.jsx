@@ -176,7 +176,7 @@ const BeachCharterPage = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-5xl font-bold text-[#03c4c9] mb-2 flex items-baseline gap-3">
+                  <div className="text-5xl font-bold text-[#03c4c9] mb-2 flex items-baseline justify-center gap-3">
                     {service?.promo_price ? (
                       <>
                         <span>{formatPrice(service.promo_price)}</span>

@@ -219,7 +219,7 @@ const ServicesManagement = () => {
           ) : (
             <div className="space-y-12">
               {[
-                { title: "Tailor-Made Experience", slugs: ['tailor-made'] },
+
                 { title: "Pre-Designed Diving Charters", slugs: ['diving-3-4-day', 'diving-full-day'] },
                 { title: "Private Boat Charters", slugs: ['sunset-charter', 'morning-charter', 'afternoon-charter', 'boat-3-4-day-charter', 'exclusive-charter'] },
                 { title: "Beach Charters", slugs: ['beach-charter'] }
