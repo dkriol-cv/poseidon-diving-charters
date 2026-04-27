@@ -105,8 +105,8 @@ export const getCatalog = async () => {
     const { data, error } = await supabase
       .from('services')
       .select(`
-        *,
-        options:service_options(*)
+        id, slug, name, description, service_type, base_price, icon, is_active, display_order,
+        options:service_options(id, label, tag, price, duration_hours, start_time, end_time, display_order, is_active)
       `)
       .eq('is_active', true)
       .eq('options.is_active', true)
@@ -135,8 +135,8 @@ export const getServiceBySlug = async (slug) => {
     const { data, error } = await supabase
       .from('services')
       .select(`
-        *,
-        options:service_options(*)
+        id, slug, name, description, service_type, base_price, icon, is_active, display_order,
+        options:service_options(id, label, tag, price, duration_hours, start_time, end_time, display_order, is_active)
       `)
       .eq('slug', slug)
       .eq('is_active', true)
