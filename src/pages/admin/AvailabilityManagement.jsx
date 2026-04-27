@@ -38,6 +38,23 @@ function isFullDay(start, end) {
   return s <= DAY_START && e >= DAY_END;
 }
 
+// Returns true if the union of all slots covers the operating window
+function slotsCoverFullDay(slots) {
+  if (!slots || slots.length === 0) return false;
+  const intervals = slots
+    .map(s => [normTime(s.start_time) || DAY_START, normTime(s.end_time) || DAY_END])
+    .sort((a, b) => a[0].localeCompare(b[0]));
+  let cursor = intervals[0][0];
+  if (cursor > DAY_START) return false;
+  let end = intervals[0][1];
+  for (let i = 1; i < intervals.length; i++) {
+    const [s, e] = intervals[i];
+    if (s > end) return false; // gap
+    if (e > end) end = e;
+  }
+  return end >= DAY_END;
+}
+
 function getBlockLabel(start, end) {
   const s = normTime(start) || DAY_START;
   const e = normTime(end)   || DAY_END;
@@ -97,7 +114,7 @@ const AvailabilityManagement = () => {
   const getDayState = (dateStr) => {
     const slots = getSlotsForDate(dateStr);
     if (slots.length === 0) return 'available';
-    if (slots.some(s => isFullDay(s.start_time, s.end_time))) return 'full';
+    if (slotsCoverFullDay(slots)) return 'full';
     return 'partial';
   };
 
@@ -137,7 +154,7 @@ const AvailabilityManagement = () => {
         continue;
       }
       const overlap = existing.filter(s =>
-        timesOverlap(newStart, newEnd, s.start_time || DAY_START, s.end_time || DAY_END)
+        timesOverlap(newStart, newEnd, normTime(s.start_time) || DAY_START, normTime(s.end_time) || DAY_END)
       );
       if (overlap.length > 0) {
         conflicts.push(`${date} (overlaps ${overlap.map(s => `${s.start_time}–${s.end_time}`).join(', ')})`);

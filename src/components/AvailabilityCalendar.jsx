@@ -34,6 +34,22 @@ function isFullDay(start, end) {
   return s <= DAY_START && e >= DAY_END;
 }
 
+// Returns true if the union of all slots covers the operating window
+function slotsCoverFullDay(slots) {
+  if (!slots || slots.length === 0) return false;
+  const intervals = slots
+    .map(s => [normTime(s.start_time) || DAY_START, normTime(s.end_time) || DAY_END])
+    .sort((a, b) => a[0].localeCompare(b[0]));
+  if (intervals[0][0] > DAY_START) return false;
+  let end = intervals[0][1];
+  for (let i = 1; i < intervals.length; i++) {
+    const [s, e] = intervals[i];
+    if (s > end) return false;
+    if (e > end) end = e;
+  }
+  return end >= DAY_END;
+}
+
 function toLocalDateStr(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
@@ -101,7 +117,7 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
   const getDayState = (date) => {
     const slots = slotsByDate[toLocalDateStr(date)];
     if (!slots || slots.length === 0) return 'available';
-    if (slots.some(s => isFullDay(s.start_time, s.end_time))) return 'full';
+    if (slotsCoverFullDay(slots)) return 'full';
     return 'partial';
   };
 
