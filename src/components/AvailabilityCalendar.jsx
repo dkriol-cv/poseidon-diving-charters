@@ -197,24 +197,33 @@ const AvailabilityCalendar = ({ serviceName, experienceImage }) => {
                   i >= 4 && 'hidden sm:flex',
                   i >= 5 && 'sm:hidden md:flex',
                   i >= 6 && 'md:hidden lg:flex',
-                  !disabled && 'border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white cursor-pointer bg-white dark:bg-transparent',
-                  disabled && 'border-gray-100 dark:border-gray-800 cursor-not-allowed bg-gray-50 dark:bg-gray-900/40',
+                  state === 'available' &&
+                    'border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white cursor-pointer bg-white dark:bg-transparent',
+                  state === 'partial' &&
+                    'bg-amber-50 dark:bg-amber-900/10 border-amber-300 dark:border-amber-700 hover:border-amber-500 cursor-pointer',
+                  state === 'full' &&
+                    'border-gray-200 dark:border-gray-800 cursor-not-allowed bg-gray-100 dark:bg-gray-900/60 opacity-60',
                 )}
               >
                 <span className={cn(
                   'text-[10px] font-medium uppercase tracking-wide leading-none mb-1',
-                  disabled ? 'text-gray-300 dark:text-gray-600' : 'text-gray-500 dark:text-gray-400'
+                  state === 'full' && 'text-gray-400 dark:text-gray-600',
+                  state === 'partial' && 'text-amber-700 dark:text-amber-300',
+                  state === 'available' && 'text-gray-500 dark:text-gray-400',
                 )}>
                   {DAY_SHORT[date.getDay()]}
                 </span>
                 <span className={cn(
                   'text-base font-semibold leading-none',
-                  disabled
-                    ? 'text-gray-300 dark:text-gray-600 line-through'
-                    : 'text-gray-900 dark:text-white'
+                  state === 'full' && 'text-gray-400 dark:text-gray-600 line-through',
+                  state === 'partial' && 'text-amber-900 dark:text-amber-200',
+                  state === 'available' && 'text-gray-900 dark:text-white',
                 )}>
                   {date.getDate()}
                 </span>
+                {state === 'partial' && (
+                  <span className="w-1 h-1 rounded-full bg-amber-500 mt-1" />
+                )}
               </button>
             );
           })}
