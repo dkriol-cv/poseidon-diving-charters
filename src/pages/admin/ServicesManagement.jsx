@@ -211,7 +211,7 @@ const ServicesManagement = () => {
                 { title: "Tailor-Made Experience", slugs: ['tailor-made'] },
                 { title: "Pre-Designed Diving Charters", slugs: ['diving-3-4-day', 'diving-full-day'] },
                 { title: "Private Boat Charters", slugs: ['sunset-charter', 'morning-charter', 'afternoon-charter', 'boat-3-4-day-charter', 'exclusive-charter'] },
-                { title: "Other Services", slugs: ['beach-charter'] }
+                { title: "Beach Charters", slugs: ['beach-charter'] }
               ].map((group, gIdx) => {
                 const groupServices = services.filter(s => group.slugs.includes(s.slug));
                 if (groupServices.length === 0) return null;
