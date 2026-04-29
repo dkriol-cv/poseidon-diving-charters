@@ -25,7 +25,7 @@ export const useBlog = () => {
       console.log('[useBlog] Attempting full query with optional columns...');
       let query = supabase
         .from('blog_posts')
-        .select('*', { count: 'exact' })
+        .select('id, title, slug, excerpt, featured_image_url, featured_image_alt, category, published_at, reading_time', { count: 'exact' })
         .eq('status', 'published')
         .is('deleted_at', null);
 

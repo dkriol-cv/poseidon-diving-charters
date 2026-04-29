@@ -3,12 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const WhatsAppButton = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  React.useEffect(() => {
+    // Delay showing the WhatsApp button to improve initial page load performance
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isVisible) return null;
 
   return (
     <div 
-      // Adjusted from bottom-[140px] to bottom-6 to be cleaner, 
-      // but keeping it relatively high if cart icon is present, standardizing for now.
-      // Task 7: Adjust bottom/right positioning to accommodate CartIcon above it
       className="fixed bottom-6 right-6 z-40 flex items-center gap-3"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
