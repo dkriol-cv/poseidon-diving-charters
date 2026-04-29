@@ -18,8 +18,7 @@ const Header = () => {
   const experienceLinks = [
     { name: 'Tailor-Made Diving Charter', path: '/tailor-made' },
     { name: 'Pre-Designed Diving Charter', path: '/pre-designed' },
-    { name: 'Private Boat Charter', path: '/exclusive-charter' },
-    { name: 'Beach Charter', path: '/beach-charter' }
+    { name: 'Private Boat Charter', path: '/exclusive-charter' }
   ];
 
   const navLinks = [

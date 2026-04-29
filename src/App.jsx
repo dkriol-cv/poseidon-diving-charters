@@ -18,7 +18,6 @@ import ExperiencesPage from '@/pages/ExperiencesPage';
 import TailorMadePage from '@/pages/TailorMadePage';
 import PreDesignedPage from '@/pages/PreDesignedPage';
 import ExclusiveCharterPage from '@/pages/ExclusiveCharterPage';
-import BeachCharterPage from '@/pages/BeachCharterPage';
 import AboutPage from '@/pages/AboutPage';
 import SustainabilityPage from '@/pages/SustainabilityPage';
 import ContactPage from '@/pages/ContactPage';
@@ -95,7 +94,6 @@ const AppShell = () => {
                 <Route path="/tailor-made" element={<TailorMadePage />} />
                 <Route path="/pre-designed" element={<PreDesignedPage />} />
                 <Route path="/exclusive-charter" element={<ExclusiveCharterPage />} />
-                <Route path="/beach-charter" element={<BeachCharterPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/sustainability" element={<SustainabilityPage />} />
                 <Route path="/contact" element={<ContactPage />} />

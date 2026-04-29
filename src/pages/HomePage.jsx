@@ -23,8 +23,8 @@ const HomePage = () => {
 
   const heroImage = "https://images.unsplash.com/photo-1593351415075-3bac9f45c877?q=80&w=1171&auto=format&fit=crop";
 
-  const primaryBtn = "bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white border-none rounded-xl h-14 font-bold transition-all duration-300";
-  const outlineBtn = "border-2 border-[#03c4c9] text-[#03c4c9] bg-white hover:bg-gray-100 hover:text-[#02a8ad] rounded-xl h-14 font-bold transition-all duration-300";
+  const primaryBtn = "bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-[#1c2226] border-none rounded-xl h-14 font-bold transition-all duration-300";
+  const outlineBtn = "border-2 border-[#007477] text-[#007477] bg-white hover:bg-gray-100 hover:text-[#02a8ad] rounded-xl h-14 font-bold transition-all duration-300";
 
   const renderServiceCard = (type) => {
     const defaults = {
@@ -59,7 +59,7 @@ const HomePage = () => {
     return (
       <motion.div {...fadeInUp} className="group relative h-[480px] rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2">
         <div className="absolute inset-0 z-0">
-          <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={config.img} alt={config.title} />
+          <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={config.img} alt={config.title} loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent"></div>
         </div>
 
@@ -92,7 +92,7 @@ const HomePage = () => {
       <section className="relative min-h-screen flex items-center overflow-hidden bg-black">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/60 z-10"></div>
-          <img className="w-full h-full object-cover opacity-80" src={heroImage} alt="Ocean Background" loading="eager" />
+          <img className="w-full h-full object-cover opacity-80" src={heroImage} alt="Ocean Background" loading="eager" fetchpriority="high" />
         </div>
 
         <div className="relative z-20 container mx-auto px-4 lg:px-12 pt-20">
@@ -178,7 +178,7 @@ const HomePage = () => {
             <div className="w-full md:w-auto p-2">
               <Button 
                 onClick={() => setShowCalendar(true)}
-                className="w-full md:w-auto h-14 px-10 bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-white font-bold rounded-xl transition-all duration-300 group"
+                className="w-full md:w-auto h-14 px-10 bg-[#03c4c9] hover:bg-[#f5c842] hover:text-[#2d353b] text-[#1c2226] font-bold rounded-xl transition-all duration-300 group"
               >
                 CHECK AVAILABILITY <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
@@ -240,7 +240,7 @@ const HomePage = () => {
             </motion.div>
 
             <motion.div {...fadeInUp} transition={{ delay: 0.2 }} className="relative">
-              <img className="rounded-2xl shadow-2xl w-full aspect-square object-cover" src="https://hcypqomjisyqrczwjrgc.supabase.co/storage/v1/object/public/Experiences%20-%20Photos/Boat%20-%20Poseidon%20Diving%20Charter%20-%2001.jpeg" alt="Boat" />
+              <img className="rounded-2xl shadow-2xl w-full aspect-square object-cover" src="https://hcypqomjisyqrczwjrgc.supabase.co/storage/v1/object/public/Experiences%20-%20Photos/Boat%20-%20Poseidon%20Diving%20Charter%20-%2001.jpeg" alt="Boat" loading="lazy" />
               <div className="absolute -bottom-6 -left-6 bg-[#03c4c9]/80 backdrop-blur-md p-8 rounded-2xl shadow-xl hidden md:block">
                 <p className="text-white font-bold text-2xl tracking-tighter">MAX 4 GUESTS</p>
                 <p className="text-white/80 text-sm uppercase tracking-widest">Absolute Exclusivity</p>

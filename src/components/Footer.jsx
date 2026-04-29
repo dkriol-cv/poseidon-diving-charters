@@ -31,7 +31,6 @@ const Footer = () => {
 						<div className="space-y-3 flex flex-col">
 							<Link to="/" className="text-[#8c959f] dark:text-gray-400 hover:text-[#03c4c9] transition-colors text-sm">Home</Link>
               <Link to="/experiences" className="text-[#8c959f] dark:text-gray-400 hover:text-[#03c4c9] transition-colors text-sm">Experiences</Link>
-							<Link to="/beach-charter" className="text-[#8c959f] dark:text-gray-400 hover:text-[#03c4c9] transition-colors text-sm">Beach Charter</Link>
 							<Link to="/about" className="text-[#8c959f] dark:text-gray-400 hover:text-[#03c4c9] transition-colors text-sm">About Us</Link>
 							<Link to="/blog" className="text-[#8c959f] dark:text-gray-400 hover:text-[#03c4c9] transition-colors text-sm">Blog</Link>
               <Link to="/faq" className="text-[#8c959f] dark:text-gray-400 hover:text-[#03c4c9] transition-colors text-sm">FAQ</Link>
@@ -82,6 +81,7 @@ const Footer = () => {
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center text-[#8c959f] dark:text-gray-400 hover:text-[#03c4c9] transition-colors group"
+							aria-label="Follow Poseidon Diving Charters on Instagram"
 						>
 							<div className="bg-white dark:bg-[#162026] p-2 rounded-full shadow-sm group-hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800 mr-3">
 								<Instagram size={20} className="text-[#2d353b] dark:text-white group-hover:text-[#03c4c9] transition-colors" />
@@ -123,6 +123,7 @@ const Footer = () => {
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-[#8c959f] dark:text-gray-500 text-[10px] uppercase tracking-tight hover:text-[#2d353b] hover:dark:text-white transition-colors"
+									aria-label="Consumer Dispute Resolution (RAL) Algarve"
 								>
 									Disputes (RAL)
 								</a>
@@ -131,6 +132,7 @@ const Footer = () => {
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-[#8c959f] dark:text-gray-500 text-[10px] uppercase tracking-tight hover:text-[#2d353b] hover:dark:text-white transition-colors"
+									aria-label="Electronic Complaints Book"
 								>
 									Livro de Reclamações
 								</a>

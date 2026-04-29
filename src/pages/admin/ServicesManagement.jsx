@@ -221,8 +221,7 @@ const ServicesManagement = () => {
               {[
 
                 { title: "Pre-Designed Diving Charters", slugs: ['diving-3-4-day', 'diving-full-day'] },
-                { title: "Private Boat Charters", slugs: ['sunset-charter', 'morning-charter', 'afternoon-charter', 'boat-3-4-day-charter', 'exclusive-charter'] },
-                { title: "Beach Charters", slugs: ['beach-charter'] }
+                { title: "Private Boat Charters", slugs: ['sunset-charter', 'morning-charter', 'afternoon-charter', 'boat-3-4-day-charter', 'exclusive-charter'] }
               ].map((group, gIdx) => {
                 const groupServices = services.filter(s => group.slugs.includes(s.slug));
 

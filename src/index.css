@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap&font-display=swap');
+
+img {
+  content-visibility: auto;
+  max-width: 100%;
+  height: auto;
+}
 
 @tailwind base;
 @tailwind components;
