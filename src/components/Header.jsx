@@ -98,10 +98,12 @@ const Header = () => {
     >
       <div className="container mx-auto px-4 sm:px-6 h-full">
         <div className="flex items-center justify-between h-full">
-          <Link to="/" className="flex-shrink-0 relative z-20">
+          <Link to="/" className="flex-shrink-0 relative z-20" aria-label="Poseidon Diving Charters Home">
             <img
               src={useSolidHeader ? LOGO_BLACK_ICON : LOGO_WHITE_ICON}
-              alt="Poseidon Diving Charters Icon"
+              alt="Poseidon Diving Charters Logo"
+              width="200"
+              height="80"
               className={cn(
                 "w-auto transition-all duration-300",
                 useSolidHeader ? "h-12 xl:h-14" : "h-14 sm:h-16 xl:h-20"
