@@ -92,7 +92,7 @@ const HomePage = () => {
       <section className="relative min-h-screen flex items-center overflow-hidden bg-black">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/60 z-10"></div>
-          <img className="w-full h-full object-cover opacity-80" src={heroImage} alt="Ocean Background" loading="eager" fetchpriority="high" />
+          <img className="w-full h-full object-cover opacity-80" src={heroImage} alt="Ocean Background" />
         </div>
 
         <div className="relative z-20 container mx-auto px-4 lg:px-12 pt-20">

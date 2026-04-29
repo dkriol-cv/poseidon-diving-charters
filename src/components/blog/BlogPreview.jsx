@@ -21,7 +21,7 @@ const BlogPreview = () => {
         console.log('[BlogPreview] Attempting full query...');
         const { data, error: fetchError } = await supabase
           .from('blog_posts')
-          .select('*')
+          .select('id, title, slug, excerpt, featured_image_url, featured_image_alt, category, published_at, reading_time')
           .eq('status', 'published')
           .is('deleted_at', null)
           .order('published_at', { ascending: false })

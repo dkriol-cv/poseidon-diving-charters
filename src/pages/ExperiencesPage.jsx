@@ -82,7 +82,7 @@ const ExperiencesPage = () => {
       <section className="relative h-[60vh] min-h-[420px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/40 z-10"></div>
-          <img className="w-full h-full object-cover" alt="Poseidon experiences" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5" loading="eager" fetchpriority="high" />
+          <img className="w-full h-full object-cover" alt="Poseidon experiences" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5" />
         </div>
         <div className="relative z-20 container mx-auto px-4 text-center">
           <motion.h1 initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-display-page text-white font-bold text-4xl sm:text-5xl md:text-6xl mb-4">
