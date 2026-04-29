@@ -9,6 +9,7 @@ import { useBookingModal } from '@/contexts/BookingModalContext';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService, useServices } from '@/hooks/useService';
 import { formatPrice } from '@/lib/formatters';
+import { optimizeImage, srcSet } from '@/lib/imageHelpers';
 
 const PreDesignedPage = () => {
   const { openModal } = useBookingModal();
@@ -136,7 +137,13 @@ const PreDesignedPage = () => {
                 <img
                   className="w-full h-auto rounded-lg shadow-2xl"
                   alt={service?.title || "Pre-designed diving experience"}
-                  src={experienceImage}
+                  src={optimizeImage(experienceImage, { width: 900, quality: 75 })}
+                  srcSet={srcSet(experienceImage, [500, 800, 1200], { quality: 75 })}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  width="900"
+                  height="675"
+                  loading="lazy"
+                  decoding="async"
                 />
               </motion.div>
             </div>

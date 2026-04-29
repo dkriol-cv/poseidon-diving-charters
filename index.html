@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' https://js.stripe.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://*.supabase.co https://*.supabase.in https://hcypqomjisyqrczwjrgc.supabase.co wss://hcypqomjisyqrczwjrgc.supabase.co; frame-src https://js.stripe.com;">
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://*.supabase.in https://hcypqomjisyqrczwjrgc.supabase.co wss://hcypqomjisyqrczwjrgc.supabase.co;">
   <meta http-equiv="Cache-Control" content="public, max-age=3600" />
   <meta http-equiv="Pragma" content="cache" />
   <meta http-equiv="Expires" content="3600" />
@@ -53,9 +53,23 @@
   <!-- Performance hints -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+  <link rel="preconnect" href="https://hcypqomjisyqrczwjrgc.supabase.co" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="dns-prefetch" href="https://hcypqomjisyqrczwjrgc.supabase.co" />
-  <link rel="dns-prefetch" href="https://images.unsplash.com" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet" /></noscript>
+
+  <!-- Preload home hero (LCP image) at multiple widths -->
+  <link
+    rel="preload"
+    as="image"
+    href="https://images.unsplash.com/photo-1593351415075-3bac9f45c877?w=1200&q=70&fm=webp&auto=format"
+    imagesrcset="
+      https://images.unsplash.com/photo-1593351415075-3bac9f45c877?w=800&q=70&fm=webp&auto=format 800w,
+      https://images.unsplash.com/photo-1593351415075-3bac9f45c877?w=1200&q=70&fm=webp&auto=format 1200w,
+      https://images.unsplash.com/photo-1593351415075-3bac9f45c877?w=1600&q=70&fm=webp&auto=format 1600w"
+    imagesizes="100vw"
+    fetchpriority="high"
+  />
 
   <!-- Structured data: TravelAgency / LocalBusiness -->
   <script type="application/ld+json">

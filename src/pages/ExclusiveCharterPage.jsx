@@ -9,6 +9,7 @@ import { useBookingModal } from '@/contexts/BookingModalContext';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService, useServices } from '@/hooks/useService';
 import { formatPrice } from '@/lib/formatters';
+import { optimizeImage, srcSet } from '@/lib/imageHelpers';
 
 const ExclusiveCharterPage = () => {
   const { openModal } = useBookingModal();
@@ -143,7 +144,13 @@ const ExclusiveCharterPage = () => {
                 <img
                   className="w-full h-auto rounded-lg shadow-2xl"
                   alt={service?.title || "Private boat charter"}
-                  src={experienceImage}
+                  src={optimizeImage(experienceImage, { width: 900, quality: 75 })}
+                  srcSet={srcSet(experienceImage, [500, 800, 1200], { quality: 75 })}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  width="900"
+                  height="675"
+                  loading="lazy"
+                  decoding="async"
                 />
               </motion.div>
             </div>

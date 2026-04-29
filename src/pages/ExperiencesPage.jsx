@@ -9,6 +9,7 @@ import { Clock, Users, Euro, ChevronRight } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
 import { useServices } from '@/hooks/useService';
 import { formatPrice } from '@/lib/formatters';
+import { optimizeImage, srcSet } from '@/lib/imageHelpers';
 
 const ExperiencesPage = () => {
   const { openModal } = useBookingModal();
@@ -82,7 +83,15 @@ const ExperiencesPage = () => {
       <section className="relative h-[60vh] min-h-[420px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/40 z-10"></div>
-          <img className="w-full h-full object-cover" alt="Poseidon experiences" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5" />
+          <img
+            className="w-full h-full object-cover"
+            alt="Poseidon experiences"
+            src={optimizeImage("https://images.unsplash.com/photo-1544551763-46a013bb70d5", { width: 1600, quality: 70 })}
+            srcSet={srcSet("https://images.unsplash.com/photo-1544551763-46a013bb70d5", [800, 1200, 1600, 2000], { quality: 70 })}
+            sizes="100vw"
+            fetchpriority="high"
+            decoding="async"
+          />
         </div>
         <div className="relative z-20 container mx-auto px-4 text-center">
           <motion.h1 initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-display-page text-white font-bold text-4xl sm:text-5xl md:text-6xl mb-4">
@@ -105,7 +114,7 @@ const ExperiencesPage = () => {
 
             <div className="bg-white dark:bg-[#162026] rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800 flex flex-col">
               <div className="relative h-60 overflow-hidden">
-                <img src={tailorMadeImage} alt="Tailor-made diving charter" className="w-full h-full object-cover" loading="lazy" />
+                <img src={optimizeImage(tailorMadeImage, { width: 600, quality: 75 })} srcSet={srcSet(tailorMadeImage, [400, 600, 900], { quality: 75 })} sizes="(max-width: 1024px) 100vw, 33vw" width="600" height="450" alt="Tailor-made diving charter" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#03c4c9]">BESPOKE</div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
@@ -127,7 +136,7 @@ const ExperiencesPage = () => {
 
             <div className="bg-white dark:bg-[#162026] rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800 flex flex-col">
               <div className="relative h-60 overflow-hidden">
-                <img src={preDesignedImage} alt="Pre-designed diving charter" className="w-full h-full object-cover" loading="lazy" />
+                <img src={optimizeImage(preDesignedImage, { width: 600, quality: 75 })} srcSet={srcSet(preDesignedImage, [400, 600, 900], { quality: 75 })} sizes="(max-width: 1024px) 100vw, 33vw" width="600" height="450" alt="Pre-designed diving charter" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#03c4c9]">ALL-INCLUSIVE</div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
@@ -147,7 +156,7 @@ const ExperiencesPage = () => {
 
             <div className="bg-white dark:bg-[#162026] rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800 flex flex-col">
               <div className="relative h-60 overflow-hidden">
-                <img src={privateBoatImage} alt="Private Boat Charter" className="w-full h-full object-cover" loading="lazy" />
+                <img src={optimizeImage(privateBoatImage, { width: 600, quality: 75 })} srcSet={srcSet(privateBoatImage, [400, 600, 900], { quality: 75 })} sizes="(max-width: 1024px) 100vw, 33vw" width="600" height="450" alt="Private Boat Charter" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#03c4c9]">EXCLUSIVITY</div>
               </div>
               <div className="p-6 flex flex-col flex-grow">

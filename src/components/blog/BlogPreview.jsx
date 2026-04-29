@@ -5,6 +5,7 @@ import { Clock, CalendarDays, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { formatBlogDate, getReadableCategory } from '@/lib/blogHelpers';
 import { Button } from '@/components/ui/button';
+import { optimizeImage, srcSet } from '@/lib/imageHelpers';
 
 const BlogPreview = () => {
   const [posts, setPosts] = useState([]);
@@ -103,12 +104,22 @@ const BlogPreview = () => {
                 className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col h-full"
               >
                 <div className="relative aspect-video overflow-hidden">
-                  <img 
-                    src={post.featured_image_url || 'https://images.unsplash.com/photo-1695173583133-c19731e2df44'} 
-                    alt={post.featured_image_alt || post.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                  {(() => {
+                    const raw = post.featured_image_url || 'https://images.unsplash.com/photo-1695173583133-c19731e2df44';
+                    return (
+                      <img
+                        src={optimizeImage(raw, { width: 600, quality: 70 })}
+                        srcSet={srcSet(raw, [400, 600, 900], { quality: 70 })}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        width="600"
+                        height="338"
+                        alt={post.featured_image_alt || post.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    );
+                  })()}
                   <div className="absolute top-4 left-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${categoryObj.color} shadow-sm`}>
                       {categoryObj.name}

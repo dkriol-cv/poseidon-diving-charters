@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Phone, Mail, X } from 'lucide-react';
 import { useBookingModal } from '@/contexts/BookingModalContext';
+import { optimizeImage } from '@/lib/imageHelpers';
 
 const BookingContactModal = () => {
   const { isOpen, closeModal, experienceName, experienceImage } = useBookingModal();
@@ -80,10 +81,12 @@ Best regards`;
         <div className="relative h-[200px] sm:h-[240px] w-full overflow-hidden rounded-t-lg">
           {displayImage ? (
             <>
-              <img 
-                src={displayImage} 
+              <img
+                src={optimizeImage(displayImage, { width: 800, quality: 75 })}
                 alt={experienceName}
                 className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
             </>
