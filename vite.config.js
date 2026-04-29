@@ -304,7 +304,36 @@ export default defineConfig({
 				'@babel/traverse',
 				'@babel/generator',
 				'@babel/types'
-			]
+			],
+			output: {
+				// Split heavy vendor libs into their own chunks so the browser
+				// downloads them in parallel and they stay cached across pages.
+				manualChunks: {
+					'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+					'motion': ['framer-motion'],
+					'supabase': ['@supabase/supabase-js'],
+					'radix': [
+						'@radix-ui/react-dialog',
+						'@radix-ui/react-dropdown-menu',
+						'@radix-ui/react-popover',
+						'@radix-ui/react-select',
+						'@radix-ui/react-tabs',
+						'@radix-ui/react-toast',
+						'@radix-ui/react-tooltip',
+						'@radix-ui/react-accordion',
+						'@radix-ui/react-alert-dialog',
+						'@radix-ui/react-checkbox',
+						'@radix-ui/react-collapsible',
+						'@radix-ui/react-label',
+						'@radix-ui/react-radio-group',
+						'@radix-ui/react-scroll-area',
+						'@radix-ui/react-separator',
+						'@radix-ui/react-slot',
+						'@radix-ui/react-switch'
+					],
+					'icons': ['lucide-react']
+				}
+			}
 		}
 	}
 });
