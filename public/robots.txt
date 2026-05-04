@@ -24,3 +24,9 @@ User-agent: CCBot
 Allow: /
 
 Sitemap: https://poseidondivingcharters.com/sitemap.xml
+
+# AI / LLM discovery
+# llms.txt:        https://poseidondivingcharters.com/llms.txt
+# llms-full.txt:   https://poseidondivingcharters.com/llms-full.txt
+# services.txt:    https://poseidondivingcharters.com/services.txt
+# RSS feed (blog): https://poseidondivingcharters.com/rss.xml

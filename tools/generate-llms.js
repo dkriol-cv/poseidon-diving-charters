@@ -81,6 +81,12 @@ function generateLlmsTxt(pages) {
   out.push('');
   out.push('Contact: info@poseidondivingcharters.com · +351 924 955 333 · Marina de Lagos (Gate E–I), Lagos, Portugal');
   out.push('');
+  out.push('## Optional');
+  out.push(`- [Full content for LLMs](${SITE_URL}/llms-full.txt): long-form pages, services and blog posts`);
+  out.push(`- [Services catalog](${SITE_URL}/services.txt): active services with prices`);
+  out.push(`- [Blog RSS feed](${SITE_URL}/rss.xml): latest published posts`);
+  out.push(`- [Sitemap](${SITE_URL}/sitemap.xml)`);
+  out.push('');
 
   if (home) {
     out.push('## Home');
