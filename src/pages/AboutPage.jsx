@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -27,6 +28,7 @@ const AboutPage = () => {
       <title>About Us - Poseidon Diving Charters</title>
       <meta name="description" content="Learn about Poseidon Diving Charters, Lagos' premier provider of tailor-made diving experiences and private boat charters. Our story, values, and commitment to excellence." />
     </Helmet>
+    <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'About', url: '/about' }]} />
 
     <div className="pt-24 bg-white dark:bg-[#0b1216]">
       {/* Hero */}

@@ -7,6 +7,8 @@ import { Loader2, ArrowLeft, Clock, CalendarDays, User, Share2, Facebook, Twitte
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { incrementViewCount } from '@/hooks/useBlog';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { articleSchema } from '@/lib/seoHelpers';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -154,23 +156,16 @@ const BlogPostPage = () => {
 
   const categoryObj = getReadableCategory(post.category);
 
-  // Schema.org JSON-LD
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": post.seo_title || post.title,
-    "image": [post.featured_image_url],
-    "datePublished": post.published_at,
-    "dateModified": post.updated_at || post.published_at,
-    "author": [{
-        "@type": "Person",
-        "name": post.author || "Poseidon Diving Team"
-    }],
-    "description": post.seo_description || post.excerpt
-  };
+  // Schema.org JSON-LD (full Article with publisher, mainEntityOfPage, etc.)
+  const jsonLd = articleSchema(post);
 
   return (
     <article className="min-h-screen bg-gray-50">
+      <Breadcrumbs items={[
+        { name: 'Home', url: '/' },
+        { name: 'Blog', url: '/blog' },
+        { name: post.title, url: `/blog/${post.slug}` },
+      ]} />
       <Helmet>
         <title>{post.seo_title || `${post.title} | Poseidon Diving Blog`}</title>
         <meta name="description" content={post.seo_description || post.excerpt} />

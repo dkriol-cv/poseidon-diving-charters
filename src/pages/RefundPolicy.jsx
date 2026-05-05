@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { motion } from 'framer-motion';
 
 const RefundPolicy = () => {
@@ -15,6 +16,7 @@ const RefundPolicy = () => {
         <title>Refund Policy - Poseidon Diving Charters</title>
         <meta name="description" content="Refund and Cancellation Policy for Poseidon Diving Charters. Understand our cancellation terms, refund eligibility, and weather-related policies." />
       </Helmet>
+      <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Refund Policy', url: '/refund-policy' }]} />
       
       <div className="pt-24 min-h-screen bg-[#f5f7f9] dark:bg-[#0b1216]">
         <div className="container mx-auto px-4 py-12 max-w-4xl">

@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { faqPageSchema } from '@/lib/seoHelpers';
 
 const faqCategories = [
   {
@@ -139,7 +141,11 @@ const FAQPage = () => {
       <Helmet>
         <title>FAQ - Poseidon Diving Charters</title>
         <meta name="description" content="Frequently asked questions about booking, facilities, safety, and dive conditions with Poseidon Diving Charters." />
+        <script type="application/ld+json">
+          {JSON.stringify(faqPageSchema(faqCategories.flatMap((c) => c.faqs)))}
+        </script>
       </Helmet>
+      <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'FAQ', url: '/faq' }]} />
 
       {/* Header Section */}
       <section className="container mx-auto px-4 mb-16 text-center max-w-3xl">

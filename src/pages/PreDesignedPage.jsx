@@ -10,6 +10,8 @@ import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService, useServices } from '@/hooks/useService';
 import { formatPrice } from '@/lib/formatters';
 import { optimizeImage, srcSet } from '@/lib/imageHelpers';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { serviceSchema, SITE_URL } from '@/lib/seoHelpers';
 
 const PreDesignedPage = () => {
   const { openModal } = useBookingModal();
@@ -57,7 +59,27 @@ const PreDesignedPage = () => {
           name="description"
           content={service?.description || "All-inclusive diving charter packages in Lagos, Portugal. Easy to book with maximum adventure and minimum fuss. Two dives, expert guides, Premium Meals & Refreshments included."}
         />
+        {service && (
+          <script type="application/ld+json">
+            {JSON.stringify(serviceSchema({
+              ...service,
+              options: [
+                services['diving-3-4-day'] && { name: '¾ Day Diving Charter', base_price: services['diving-3-4-day'].base_price },
+                services['diving-full-day'] && { name: 'Full Day Diving Charter', base_price: services['diving-full-day'].base_price },
+              ].filter(Boolean),
+            }, {
+              url: `${SITE_URL}/pre-designed`,
+              image: experienceImage,
+              serviceType: 'All-inclusive private diving charter',
+            }))}
+          </script>
+        )}
       </Helmet>
+      <Breadcrumbs items={[
+        { name: 'Home', url: '/' },
+        { name: 'Experiences', url: '/experiences' },
+        { name: 'Pre-Designed', url: '/pre-designed' },
+      ]} />
 
       <div className="pt-24 bg-white dark:bg-[#0b1216]">
         {/* Hero */}

@@ -10,6 +10,8 @@ import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService, useServices } from '@/hooks/useService';
 import { formatPrice } from '@/lib/formatters';
 import { optimizeImage, srcSet } from '@/lib/imageHelpers';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { serviceSchema, SITE_URL } from '@/lib/seoHelpers';
 
 const ExclusiveCharterPage = () => {
   const { openModal } = useBookingModal();
@@ -66,7 +68,29 @@ const ExclusiveCharterPage = () => {
           name="description"
           content={service?.description || "Private boat charter in Lagos, Portugal. Exclusive experiences with Premium Meals & Refreshments included, flexible activities, and itineraries. The boat, crew, and adventure are entirely yours."}
         />
+        {service && (
+          <script type="application/ld+json">
+            {JSON.stringify(serviceSchema({
+              ...service,
+              options: ['sunset-charter', 'morning-charter', 'afternoon-charter', 'boat-3-4-day-charter']
+                .map((slug) => services[slug] && {
+                  name: services[slug].title || services[slug].name,
+                  base_price: services[slug].base_price,
+                })
+                .filter(Boolean),
+            }, {
+              url: `${SITE_URL}/exclusive-charter`,
+              image: experienceImage,
+              serviceType: 'Private boat charter',
+            }))}
+          </script>
+        )}
       </Helmet>
+      <Breadcrumbs items={[
+        { name: 'Home', url: '/' },
+        { name: 'Experiences', url: '/experiences' },
+        { name: 'Exclusive Charter', url: '/exclusive-charter' },
+      ]} />
 
       <div className="pt-24 bg-white dark:bg-[#0b1216]">
         <section className="relative py-20 px-4 border-b border-gray-100 dark:border-gray-800 bg-[#f5f7f9] dark:bg-[#111a1f]">

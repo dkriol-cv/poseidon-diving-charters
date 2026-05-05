@@ -9,6 +9,8 @@ import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import { useService } from '@/hooks/useService';
 import { formatPrice } from '@/lib/formatters';
 import { optimizeImage, srcSet } from '@/lib/imageHelpers';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { serviceSchema, SITE_URL } from '@/lib/seoHelpers';
 
 const TailorMadePage = () => {
   const { openModal } = useBookingModal();
@@ -31,7 +33,21 @@ const TailorMadePage = () => {
           name="description"
           content={service?.description || "Create your bespoke diving experience with personalized consultation, Premium Meals & Refreshments included, and premium add-ons. High-end diving charters in Lagos, Portugal."}
         />
+        {service && (
+          <script type="application/ld+json">
+            {JSON.stringify(serviceSchema(service, {
+              url: `${SITE_URL}/tailor-made`,
+              image: experienceImage,
+              serviceType: 'Bespoke private diving charter',
+            }))}
+          </script>
+        )}
       </Helmet>
+      <Breadcrumbs items={[
+        { name: 'Home', url: '/' },
+        { name: 'Experiences', url: '/experiences' },
+        { name: 'Tailor-Made', url: '/tailor-made' },
+      ]} />
 
       <div className="pt-24 bg-white dark:bg-[#0b1216]">
         <section className="relative py-20 px-4 border-b border-gray-100 dark:border-gray-800 bg-[#f5f7f9] dark:bg-[#111a1f]">

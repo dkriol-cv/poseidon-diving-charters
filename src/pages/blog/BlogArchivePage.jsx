@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { motion } from 'framer-motion';
 import { Loader2, SearchX } from 'lucide-react';
 import { useBlog } from '@/hooks/useBlog';
@@ -89,6 +90,7 @@ const BlogArchivePage = () => {
         <title>Blog | Poseidon Diving Charters</title>
         <meta name="description" content="Discover diving tips, marine life insights, and news from Poseidon Diving Charters in Cape Verde." />
       </Helmet>
+      <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Blog', url: '/blog' }]} />
 
       {/* Hero Section */}
       <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden bg-[#0b1216]">

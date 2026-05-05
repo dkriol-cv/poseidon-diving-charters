@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -79,6 +80,7 @@ const ExperiencesPage = () => {
         <title>Experiences - Poseidon Diving Charters</title>
         <meta name="description" content="Explore all Poseidon experiences in one place." />
       </Helmet>
+      <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Experiences', url: '/experiences' }]} />
 
       <section className="relative h-[60vh] min-h-[420px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { motion } from 'framer-motion';
 const SustainabilityPage = () => {
   const fadeInUp = {
@@ -23,6 +24,7 @@ const SustainabilityPage = () => {
         <title>Sustainability | Poseidon Diving Charters</title>
         <meta name="description" content="At Poseidon Diving Charters, our mission goes beyond providing dive experiences; it's about preserving the delicate marine ecosystems of the Algarve." />
       </Helmet>
+      <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Sustainability', url: '/sustainability' }]} />
 
       <div className="pt-24 bg-white dark:bg-[#0b1216] min-h-screen">
         {/* Hero Section */}

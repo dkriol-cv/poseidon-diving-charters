@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { motion } from 'framer-motion';
 
 const PrivacyPolicy = () => {
@@ -15,6 +16,7 @@ const PrivacyPolicy = () => {
         <title>Privacy Policy - Poseidon Diving Charters</title>
         <meta name="description" content="Privacy Policy for Poseidon Diving Charters. Learn how we collect, use, and protect your personal data in accordance with GDPR." />
       </Helmet>
+      <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Privacy Policy', url: '/privacy' }]} />
       
       <div className="pt-24 min-h-screen bg-[#f5f7f9] dark:bg-[#0b1216]">
         <div className="container mx-auto px-4 py-12 max-w-4xl">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { motion } from 'framer-motion';
 
 const TermsOfService = () => {
@@ -15,6 +16,7 @@ const TermsOfService = () => {
         <title>Terms of Service - Poseidon Diving Charters</title>
         <meta name="description" content="Terms of Service for Poseidon Diving Charters. Read our user responsibilities, liability limitations, and service agreements." />
       </Helmet>
+      <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Terms of Service', url: '/terms' }]} />
       
       <div className="pt-24 min-h-screen bg-[#f5f7f9] dark:bg-[#0b1216]">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
